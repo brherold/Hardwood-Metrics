@@ -1,0 +1,54 @@
+2/8
+---
+Accomplished some /games features
+ -Adds team_stats table for both teams 
+ -Adds offense_stats table and defense_stats table for both teams
+
+Tomorrow Goals
+ -Add player stats from /games 
+    - If game is happening this year, update player skills table for that player
+    - Else dont go to player skills table
+
+Need to remember:
+ -Be able to pull the data from api (team_stats, offense_stats,defense_stats etc)
+    -Have to turn into methods (api calls) 
+
+
+2/11
+
+DONE
+   Idea
+   Player Skill Finder
+   -Solo?
+      - Use their player link
+   - Multiple on same Team?
+      - Use Roster Link of team 
+
+   ex:
+
+   1000 teams w/ 10 players -> 10000 players total 
+   Update players using player link:
+      ~2.5s per player -> 25000s
+   Update using team of player (team roster link)
+      2.5s per team -> 2500s
+
+      -TeamInfo 
+         - Make it so its a dictionary that holds team_name, team_ID, players and their skills
+         - Add that to API so when user request a Team, their players and player_skills 
+         are added in the db aswell
+            - Do for add team (/teams)
+            -Adds team to DB
+            - Adds player to Player (from team)
+            - Adds player's skills to PlayerSkills (from team)
+         - Make sure in add_games_helper call add_teams before add_players
+   NOW
+
+Update player (problem with new player (might be for player in DB aswell))
+
+
+- Update models.py playerSkills Table , add Stars, SI etc
+- Update dbOperations to for the playerSkills & teamStats & playerStatss
+
+
+New Notes:
+With the new pygameAnalayzerAPI add the new fields to the table (OPTS,Poss,OPoss, etc)
