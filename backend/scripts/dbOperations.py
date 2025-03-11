@@ -6,6 +6,7 @@ from scripts.teamRosterInfo import *
 from .predict import *
 from .getConferenceDivison import *
 from .getTeamConference import *
+from sqlalchemy import *
 
 #DONT ADD OLD SEASON GAMES WHEN THIS IS HARDCODED
 #current_season = find_current_season()
@@ -541,6 +542,10 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
     """
     Helper function to create a TeamStats table.
     """
+
+    gameNumber = db.session.query(func.count(TeamStats.G)).filter_by(team_id=team_id).scalar()
+
+
     
 
     #Prep for BPM Training 
@@ -558,6 +563,7 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
     return TeamStats(
         game_id=game_id,
         team_id=team_id,
+        G = gameNumber + 1 if gameNumber != None else 1,
         outcome= team_outcome,
         #season_id=season_id,
         F_M =team_shots["Finishing"][0],
@@ -642,6 +648,7 @@ def game_data_to_team_stats(game_data):
     """
     Takes in game_data from gameAnalyzer(game_id) and inputs stats into DB (TeamStats).
     """
+        
     try:
         # Extract game data
         game_id = int(game_data["gameCode"])
@@ -804,6 +811,9 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     '''
     Inputs player_id, game_id, player_shots,... and puts in PlayerStats db 
     '''
+
+    gameNumber = db.session.query(func.count(PlayerStats.G)).filter_by(player_id=player_id).scalar()
+
     #Prep for BPM Training 
     off_values = [player_stats["Poss"], player_stats["PTS"],player_stats["FG"][1],
                       player_stats["FT"][1],player_stats["Off"],player_stats["AST"],
@@ -818,8 +828,9 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     return PlayerStats(
         player_id = player_id,
         game_id=game_id,
-
+        G = gameNumber + 1 if gameNumber != None else 1,
         Pos = player_position,
+        GS = player_stats["Start"],
         Min = player_stats["Min"],
         PTS = player_stats["PTS"],
         FG_M = player_stats["FG"][0],
@@ -970,7 +981,7 @@ def add_player_stats(game_data):
 
 
 #Updates Player Stat Averages for game
-def update_player_avg(player_id,season_id,game_type,player_position,player_shots,player_defense,player_stats): 
+def update_player_avg(player_id,season_id,game_type,player_position,player_shots,player_defense,player_stats,player_pos_min): 
     player_avg = db.session.query(PlayerAvg).filter_by(player_id = player_id,season_id = season_id,game_type=game_type).first()
     
 
@@ -981,7 +992,13 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
 
         new_games_played = player_avg.GP + 1
 
-
+        player_avg.GS = player_avg.GS + player_stats["Start"]
+         
+        player_avg.PG_Min = round(((player_avg.PG_Min * player_avg.GP) + player_pos_min["PG"]) / new_games_played, 3) 
+        player_avg.SG_Min = round(((player_avg.SG_Min * player_avg.GP) + player_pos_min["SG"]) / new_games_played, 3) 
+        player_avg.SF_Min = round(((player_avg.SF_Min * player_avg.GP) + player_pos_min["SF"]) / new_games_played, 3) 
+        player_avg.PF_Min = round(((player_avg.PF_Min * player_avg.GP) + player_pos_min["PF"]) / new_games_played, 3) 
+        player_avg.C_Min = round(((player_avg.C_Min * player_avg.GP) + player_pos_min["C"]) / new_games_played, 3) 
         
         player_avg.F_M = round(((player_avg.F_M * player_avg.GP) + player_shots["Finishing"][0]) / new_games_played, 3)
         player_avg.F_A = round(((player_avg.F_A * player_avg.GP) + player_shots["Finishing"][1]) / new_games_played, 3)
@@ -1108,6 +1125,13 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
             game_type=game_type, 
 
             GP = 1,
+            GS = player_stats["Start"],
+            
+            PG_Min = player_pos_min["PG"],
+            SG_Min = player_pos_min["SG"],
+            SF_Min = player_pos_min["SF"],
+            PF_Min = player_pos_min["PF"],
+            C_Min = player_pos_min["C"],
 
             F_M =player_shots["Finishing"][0],
             F_A =player_shots["Finishing"][1],
@@ -1265,7 +1289,7 @@ def add_game_helper(game_id):
     all_players = game_data["homeTeam"]["players"] + game_data["awayTeam"]["players"]
 
     for player in all_players:
-        update_player_avg(player["playerCode"],season_id,game_type,player["position"],player["shots"],player["defense"],player["stats"])
+        update_player_avg(player["playerCode"],season_id,game_type,player["position"],player["shots"],player["defense"],player["stats"],player["pos_min"])
 
     
     #update_player_avg(player_id,season_id,game_type,player_position,player_shots,player_defense,player_stats)
@@ -1286,7 +1310,7 @@ def add_game_helper(game_id):
 
         #Update Stats for All players aswell
         for player in all_players:
-            update_player_avg(player["playerCode"],season_id,"College",player["position"],player["shots"],player["defense"],player["stats"])
+            update_player_avg(player["playerCode"],season_id,"College",player["position"],player["shots"],player["defense"],player["stats"],player["pos_min"])
 
 
 

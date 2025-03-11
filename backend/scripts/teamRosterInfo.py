@@ -1,17 +1,70 @@
 from bs4 import BeautifulSoup
 import requests
 from .pygetPlayerInfo import *
+#python -m backend.scripts.teamRosterInfo
+from datetime import *
+import os
+
+
+#For not only updating TeamRosterInfo (checking in TeamRosterPage Folder) when its Thursday or Sunday (Development Days)
+
+today = date.today()
+
+# Get weekday as an integer (Monday is 0, Sunday is 6) (3 or 6)
+weekday_number = today.weekday()
+
+
+
+def save_html_to_file(content, filename):
+    with open(filename, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+# Function to load HTML content from a local file
+def load_html_from_file(filename):
+    with open(filename, 'r', encoding='utf-8') as file:
+        return file.read()
+
+def delete_file(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
+    return 
+
+
 
 #run in terminal: python -m scripts.teamRosterInfo
 
 #Outputs dictionary of team w/ team_name, team_id, players and their skills using the team's roster link
 def team_roster_info(teamURL):
-    
+
+
+    cache_folder = "backend/TeamRosterPage"
+
+
     teamID = int(teamURL.split("/")[-1])
+    cache_filename = os.path.join(cache_folder, f"{teamID}.html")
     teamRosterURL = "http://onlinecollegebasketball.org/roster/" + str(teamID)
 
-    teamRosterPage = requests.get(teamRosterURL)
-    teamRosterSoup = BeautifulSoup(teamRosterPage.text,"html")
+    
+    
+    if today in [3,6]: #If the day is Thursday or Sunday (Dev Days) 
+        delete_file(cache_filename)
+    try:
+        # Try to load HTML content from the local cache
+        page = load_html_from_file(cache_filename)
+        
+        
+    except FileNotFoundError:
+        # If not found, fetch the content from the URL
+        page = requests.get(teamRosterURL)
+
+        # Save HTML content to the local cache
+        save_html_to_file(page.text, cache_filename)
+        page = page.text #to fit in with variable names for soup 
+        
+
+
+    teamRosterSoup = BeautifulSoup(page,"html")
+
 
     #Finds Name of Team
 
@@ -68,4 +121,6 @@ def team_roster_info(teamURL):
     return teamData
 
 #print(team_roster_info("http://onlinecollegebasketball.org/team/533"))
+
+
 

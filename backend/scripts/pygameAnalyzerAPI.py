@@ -115,7 +115,8 @@ def gameAnalyzer(gameURL):
                     "shots": {"Finishing": [0, 0], "Inside Shot": [0, 0], "Mid-Range": [0, 0], "3-Pointer": [0, 0]},
                     "defense": {"Finishing": [0, 0], "Inside Shot": [0, 0], "Mid-Range": [0, 0], "3-Pointer": [0, 0]}, 
                     "driving": [0, 0], 
-                    "stats":{"Min": 0, "FG": [0,0], "3P": [0,0], "FT": [0,0], "PTS": 0, "Off": 0, "Reb": 0, "AST": 0, "STL": 0, "BLK": 0, "TO": 0, "PF": 0, "+/-": 0, "DIST": 0, "PITP": 0, "FBP": 0, "FD": 0, "Fat": "", "Poss": 0, "OPoss": 0, "OPTS": 0, "OFG": [0,0], "O3P": [0,0] }})
+                    "stats":{"Start":0,"Min": 0, "FG": [0,0], "3P": [0,0], "FT": [0,0], "PTS": 0, "Off": 0, "Reb": 0, "AST": 0, "STL": 0, "BLK": 0, "TO": 0, "PF": 0, "+/-": 0, "DIST": 0, "PITP": 0, "FBP": 0, "FD": 0, "Fat": "", "Poss": 0, "OPoss": 0, "OPTS": 0, "OFG": [0,0], "O3P": [0,0] },
+                "pos_min": {"PG": 0, "SG": 0, "SF": 0, "PF" : 0, "C": 0}})
             else:
                 # Update existing player information
                 gameData[curTeam]["players"][i]["name"] = name
@@ -124,8 +125,8 @@ def gameAnalyzer(gameURL):
                 gameData[curTeam]["players"][i]["shots"] = {"Finishing": [0, 0], "Inside Shot": [0, 0], "Mid-Range": [0, 0], "3-Pointer": [0, 0]}
                 gameData[curTeam]["players"][i]["defense"] = {"Finishing": [0, 0], "Inside Shot": [0, 0], "Mid-Range": [0, 0], "3-Pointer": [0, 0]}
                 gameData[curTeam]["players"][i]["driving"] = [0, 0]
-                gameData[curTeam]["players"][i]["stats"] = {"Min": 0, "FG": [0,0], "3P": [0,0], "FT": [0,0], "PTS": 0, "Off": 0, "Reb": 0, "AST": 0, "STL": 0, "BLK": 0, "TO": 0, "PF": 0, "+/-": 0, "DIST": 0, "PITP": 0, "FBP": 0, "FD": 0, "Fat": "", "Poss": 0,"OPoss": 0, "OPTS": 0, "OFG": [0,0], "O3P": [0,0] }
-
+                gameData[curTeam]["players"][i]["stats"] = {"Start":0,"Min": 0, "FG": [0,0], "3P": [0,0], "FT": [0,0], "PTS": 0, "Off": 0, "Reb": 0, "AST": 0, "STL": 0, "BLK": 0, "TO": 0, "PF": 0, "+/-": 0, "DIST": 0, "PITP": 0, "FBP": 0, "FD": 0, "Fat": "", "Poss": 0,"OPoss": 0, "OPTS": 0, "OFG": [0,0], "O3P": [0,0] }
+                gameData[curTeam]["players"][i]["pos_min"] = {"PG": 0, "SG": 0, "SF": 0, "PF" : 0, "C": 0}
             # Switch the team if the next player is "Total" and the current team is "homeTeam"
             if infoListPlayers[i + 1].text == "Total" and curTeam == "awayTeam":
                 curTeam = "homeTeam"
@@ -155,12 +156,22 @@ def gameAnalyzer(gameURL):
         statList = string.find_all("td")[3:]
         #If minutes of the line < 200 -> then thats a playerLine else thats a teamLine
         minCheck = int(statList[0].text)
-
+        
         if minCheck < 200:
             
+            
             playerID = string.find("a").get("href").split("/")[-1]
+            
+
             for player in gameData[curTeam]["players"]:
+                position_mins = statList[0].get("title")
+                pos_min_split = position_mins.split(" ")
                 if player["playerCode"] == playerID:
+                    if curTeam == "awayTeam":
+                        player["stats"]["Start"] = 1 if index + 1 <= 5 else 0
+                    else:
+                        player["stats"]["Start"] = 1 if index - awayPlayerCount <= 5 else 0
+                    
                     player["stats"]["Min"] = int(statList[0].text)
                     player["stats"]["FG"][0] = int(statList[1].text.split("-")[0])
                     player["stats"]["FG"][1] = int(statList[1].text.split("-")[1])
@@ -185,6 +196,12 @@ def gameAnalyzer(gameURL):
                     player["stats"]["FBP"] = int(statList[15].text)
                     player["stats"]["FD"] = int(statList[16].text)
                     player["stats"]["Fat"] = statList[17].text
+                    
+                    player["pos_min"]["PG"] = int(pos_min_split[1])
+                    player["pos_min"]["SG"] = int(pos_min_split[4])
+                    player["pos_min"]["SF"] = int(pos_min_split[7])
+                    player["pos_min"]["PF"] = int(pos_min_split[10])
+                    player["pos_min"]["C"] = int(pos_min_split[13])
                     
                     
         else:
@@ -218,6 +235,7 @@ def gameAnalyzer(gameURL):
             team["stats"]["Fat"] = statList[17].text
         if index  + 1 > awayPlayerCount:
             curTeam = "homeTeam"
+
     
     
     
@@ -543,5 +561,24 @@ def gameAnalyzer(gameURL):
 
     return gameData
 
-#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1033201"))
+#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1027830"))
 
+
+'''
+#Checks if gameAnalyzer works for All games
+folder_path = "Backend/GamesHTML"  # Replace with your folder path
+files = os.listdir(folder_path)
+
+
+for index, game_file in enumerate(files):
+    gameURL = "http://onlinecollegebasketball.org/game/" + game_file.split(".")[0]
+    try:
+        gameAnalyzer(gameURL)
+        if index % 100 == 0:
+            print("w")
+        
+    except:
+        print(gameURL)
+        print("did not work")
+        break
+'''

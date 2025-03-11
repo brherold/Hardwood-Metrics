@@ -109,9 +109,11 @@ class TeamStats(db.Model):
     __tablename__ = "team_stats"
 
     game_id = db.Column(db.Integer, db.ForeignKey("games.game_id"), primary_key=True)
+    G = db.Column(db.Integer)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), primary_key=True)
+    
     outcome = db.Column(db.Integer)
-
+    
 
     Min = db.Column(db.Integer)
     PTS = db.Column(db.Integer)
@@ -265,8 +267,10 @@ class PlayerStats(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey("games.game_id"), primary_key=True)
     #season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"))
+    G = db.Column(db.Integer)
     
     Pos = db.Column(db.String)
+    GS = db.Column(db.Integer)
     Min = db.Column(db.Integer)
     PTS = db.Column(db.Integer)
     FG_M = db.Column(db.Integer, default=0)
@@ -347,8 +351,15 @@ class PlayerAvg(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), primary_key=True)
     season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"), primary_key=True)
     game_type = db.Column(db.String, primary_key=True)
-
     GP = db.Column(db.Integer) #Games Played
+    GS = db.Column(db.Integer)
+    #Minutes for Each Position
+    PG_Min = db.Column(db.Float)
+    SG_Min = db.Column(db.Float)
+    SF_Min = db.Column(db.Float)
+    PF_Min = db.Column(db.Float)
+    C_Min = db.Column(db.Float)
+    #
     Min = db.Column(db.Float)
     PTS = db.Column(db.Float)
     FG_M = db.Column(db.Float, default=0)

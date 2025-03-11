@@ -104,27 +104,30 @@ def addGame(game_url):
 
 
 def add_games_for_team(team_id):
+    count = 0
     for game in team_games_played(team_id):
-        try:
+        try:       
             addGame(game)
+            count += 1
         except:
             #if it hits NPY games then delete the html file from the GamesHTML folder and break 
             cache_folder = "backend/GamesHTML"
             gameURLCode = game.split("/")[-1]
             cache_filename = os.path.join(cache_folder, f"{gameURLCode}.html")
             delete_file(cache_filename)
+            
             break #if it hits NPY games
 
-    print(f"Added All games for team: {team_id}")
+    print(f"Added All {count} games for team: {team_id}")
     print()
 
 
 #''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
-while(team_id < 1009):
+while(team_id < 3):
     add_games_for_team(team_id)
     team_id += 1
 #'''
-#add_games_for_team(533)
+#add_games_for_team(2)
 
 
