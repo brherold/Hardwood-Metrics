@@ -498,6 +498,11 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             _3P_A =team_shots["3-Pointer"][1],
             _3P_P = fg_percentage(team_shots["3-Pointer"][0],team_shots["3-Pointer"][1]),
 
+            _2P_M = team_stats["FG"][0] - team_shots["3-Pointer"][0],
+            _2P_A = team_stats["FG"][1] - team_shots["3-Pointer"][1],
+            _2P_P = fg_percentage(team_stats["FG"][0] - team_shots["3-Pointer"][0] , team_stats["FG"][1] - team_shots["3-Pointer"][1]),
+
+
            
             Min = team_stats["Min"],
             PTS = team_stats["PTS"],
@@ -585,6 +590,10 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
         _3P_A =team_shots["3-Pointer"][1],
         _3P_P = fg_percentage(team_shots["3-Pointer"][0],team_shots["3-Pointer"][1]),
 
+        _2P_M = team_stats["FG"][0] - team_shots["3-Pointer"][0],
+        _2P_A = team_stats["FG"][1] - team_shots["3-Pointer"][1],
+        _2P_P = fg_percentage(team_stats["FG"][0] - team_shots["3-Pointer"][0] , team_stats["FG"][1] - team_shots["3-Pointer"][1]),
+
         O_PTS = team_stats["OPTS"],
         O_FG_M = team_stats["OFG"][0],
         O_FG_A = team_stats["OFG"][1],
@@ -595,6 +604,10 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
         O_3P_A = opponent_shots["3-Pointer"][1],
         O_3P_P = fg_percentage(opponent_shots["3-Pointer"][0],opponent_shots["3-Pointer"][1]),
 
+        
+        O_2P_M = team_stats["OFG"][0] - team_stats["O3P"][0],
+        O_2P_A = team_stats["OFG"][1] - team_stats["O3P"][1],
+        O_2P_P = fg_percentage(team_stats["OFG"][0] - team_stats["O3P"][0], team_stats["OFG"][1] - team_stats["O3P"][1]),
        
         O_F_M = opponent_shots["Finishing"][0],
         O_F_A = opponent_shots["Finishing"][1],
@@ -896,6 +909,10 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
         O_3P_M = player_defense["3-Pointer"][0],
         O_3P_A = player_defense["3-Pointer"][1],
         O_3P_P = fg_percentage(player_defense["3-Pointer"][0],player_defense["3-Pointer"][1]),
+
+        O_2P_M = player_stats["OFG"][0] - player_stats["O3P"][0],
+        O_2P_A = player_stats["OFG"][1] - player_stats["O3P"][1],
+        O_2P_P = fg_percentage(player_stats["OFG"][0] - player_stats["O3P"][0], player_stats["OFG"][1] - player_stats["O3P"][1]),
 
         O_Poss = player_stats["OPoss"],
             

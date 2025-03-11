@@ -562,8 +562,8 @@ def gameAnalyzer(gameURL):
     return gameData
 
 #print(gameAnalyzer("http://onlinecollegebasketball.org/game/1027830"))
-
-
+x = gameAnalyzer("http://onlinecollegebasketball.org/game/1027830")
+print(x["homeTeam"]["players"][0]["stats"])
 '''
 #Checks if gameAnalyzer works for All games
 folder_path = "Backend/GamesHTML"  # Replace with your folder path

@@ -182,7 +182,7 @@ def game():
                 "message": "Game found or added successfully",
                 "game_id": game.game_id,
                 "game_type": game.game_type,
-                "season_year": game.season_id + 2042,
+                "season_year": game.season_id,
                 "home_team_id": game.home_team_id,
                 "away_team_id" : game.away_team_id
             }), 200  # HTTP 200 OK

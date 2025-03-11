@@ -122,12 +122,12 @@ def add_games_for_team(team_id):
     print()
 
 
-#''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
+''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
-while(team_id < 3):
+while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
-#'''
-#add_games_for_team(2)
+'''
+add_games_for_team(533)
 
 
