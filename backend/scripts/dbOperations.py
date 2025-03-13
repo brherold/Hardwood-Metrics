@@ -548,8 +548,6 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
     Helper function to create a TeamStats table.
     """
 
-    gameNumber = db.session.query(func.count(TeamStats.G)).filter_by(team_id=team_id).scalar()
-
 
     
 
@@ -568,7 +566,6 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
     return TeamStats(
         game_id=game_id,
         team_id=team_id,
-        G = gameNumber + 1 if gameNumber != None else 1,
         outcome= team_outcome,
         #season_id=season_id,
         F_M =team_shots["Finishing"][0],
@@ -635,6 +632,7 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
         FT_P = fg_percentage(team_stats["FT"][0],team_stats["FT"][1]),
         
         Off = team_stats["Off"],
+        Def = team_stats["Reb"] - team_stats["Off"],
         Rebs = team_stats["Reb"],
         AST = team_stats["AST"],
         STL = team_stats["STL"],
@@ -825,7 +823,7 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     Inputs player_id, game_id, player_shots,... and puts in PlayerStats db 
     '''
 
-    gameNumber = db.session.query(func.count(PlayerStats.G)).filter_by(player_id=player_id).scalar()
+
 
     #Prep for BPM Training 
     off_values = [player_stats["Poss"], player_stats["PTS"],player_stats["FG"][1],
@@ -841,7 +839,6 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     return PlayerStats(
         player_id = player_id,
         game_id=game_id,
-        G = gameNumber + 1 if gameNumber != None else 1,
         Pos = player_position,
         GS = player_stats["Start"],
         Min = player_stats["Min"],
@@ -863,6 +860,7 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
         FT_P = fg_percentage(player_stats["FT"][0],player_stats["FT"][1]),
         
         Off = player_stats["Off"],
+        Def = player_stats["Reb"] - player_stats["Off"],
         Rebs = player_stats["Reb"],
         AST = player_stats["AST"],
         STL = player_stats["STL"],
@@ -1001,6 +999,12 @@ def add_player_stats(game_data):
 def update_player_avg(player_id,season_id,game_type,player_position,player_shots,player_defense,player_stats,player_pos_min): 
     player_avg = db.session.query(PlayerAvg).filter_by(player_id = player_id,season_id = season_id,game_type=game_type).first()
     
+    #Gets Team and Opponent Team Avg Stats (for calculating advanced statistics like AST%)
+    team_id_of_player = db.session.query(Player.team_id).filter_by(player_id=player_id).scalar()
+    team_avg = db.session.query(TeamAvg).filter_by(team_id=team_id_of_player, season_id = season_id,game_type=game_type,stat_type="team").first()
+    opp_team_avg = db.session.query(TeamAvg).filter_by(team_id=team_id_of_player, season_id = season_id,game_type=game_type,stat_type="opponent").first()
+    
+    
 
     if player_avg:
         
@@ -1115,12 +1119,69 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.OBPM = bpm_values[0]
         player_avg.DBPM = bpm_values[1]
         player_avg.BPM = bpm_values[2]
+        
+        #Advanced Statistics
+        player_avg.TS = round((player_avg.PTS) / (2 * (player_avg.FG_A + 0.44 * player_avg.FT_A)), 3) if (player_avg.FG_A + 0.44 * player_avg.FT_A) != 0 else 0
 
+        player_avg._3PAr = round(player_avg._3P_A / player_avg.FG_A, 3) if player_avg.FG_A != 0 else 0
+
+        player_avg.FTr = round(player_avg.FT_A / player_avg.FG_A, 3) if player_avg.FG_A != 0 else 0
+
+        denom = player_avg.Min * (team_avg.Off + opp_team_avg.Def)
+        player_avg.ORB_P = round(100 * (player_avg.Off * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.Min * (team_avg.Def + opp_team_avg.Off)
+        player_avg.DRB_P = round(100 * (player_avg.Def * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.Min * (team_avg.Rebs + opp_team_avg.Rebs)
+        player_avg.TRB_P = round(100 * (player_avg.Rebs * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+
+        denom = ((player_avg.Min / (team_avg.Min / 5)) * team_avg.FG_M) - player_avg.FG_M
+        player_avg.AST_P = round(100 * player_avg.AST / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.Min * opp_team_avg.Poss
+        player_avg.STL_P = round(100 * (player_avg.STL * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.Min * (opp_team_avg.FG_A - opp_team_avg._3P_A)
+        player_avg.BLK_P = round(100 * (player_avg.BLK * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.FG_A + 0.44 * player_avg.FT_A + player_avg.TO
+        player_avg.TO_P = round(100 * player_avg.TO / denom, 1) if denom != 0 else 0
+
+        denom = player_avg.Min * (team_avg.FG_A + 0.44 * team_avg.FT_A + team_avg.TO)
+        player_avg.USG_P = round(100 * ((player_avg.FG_A + 0.44 * player_avg.FT_A + player_avg.TO) * (team_avg.Min / 5)) / denom, 1) if denom != 0 else 0
+        
         player_avg.GP = new_games_played  # Last because Needed to calculate Avg for Stats Before
                 
 
 
     else:
+        
+        team_game_stats = (
+            db.session.query(TeamStats)
+            .filter_by(team_id=team_id_of_player)
+            .order_by(TeamStats.G.desc())  
+            .first()
+        )
+
+        game_result = (
+            db.session.query(TeamStats.game_id)
+            .filter_by(team_id=team_id_of_player)
+            .order_by(TeamStats.G.desc())
+            .first()
+        )
+
+        # Accessing the game_id from the result
+        game_id = game_result[0] if game_result else None
+
+        #Gets opp stats from game
+        opp_team_game_stats = (
+            db.session.query(TeamStats)
+            .filter(TeamStats.game_id == game_id)  
+            .filter(TeamStats.team_id != team_id_of_player)  
+            .first()  
+        )
+        
        
         
         #Prep for BPM Training 
@@ -1230,6 +1291,50 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
             OBPM = bpm_values[0], 
             DBPM = bpm_values[1], 
             BPM =  bpm_values[2],
+
+            #Advanced Statistics
+            TS = round((player_stats["PTS"]) / (2 * (player_stats["FG"][1] + 0.44 * player_stats["FT"][1])), 3) \
+                if (player_stats["FG"][1] + 0.44 * player_stats["FT"][1]) != 0 else 0,
+
+            _3PAr = round(player_shots["3-Pointer"][1] / player_stats["FG"][1], 3) if player_stats["FG"][1] != 0 else 0,
+
+            FTr = round(player_stats["FT"][1] / player_stats["FG"][1], 3) if player_stats["FG"][1] != 0 else 0,
+
+            # Calculations without using 'denom' as a variable
+            ORB_P = round(100 * (player_stats["Off"] * (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * (team_game_stats.Off + (opp_team_game_stats.Def))), 1) \
+                if (player_stats["Min"] * (team_game_stats.Off + (opp_team_game_stats.Def))) != 0 else 0,
+
+            DRB_P = round(100 * ((player_stats["Reb"] - player_stats["Off"])* (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * (team_game_stats.Def + (opp_team_game_stats.Off))), 1) \
+                if (player_stats["Min"] * (team_game_stats.Def + (opp_team_game_stats.Off))) != 0 else 0,
+
+            TRB_P = round(100 * (player_stats["Reb"] * (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * (team_game_stats.Rebs + opp_team_game_stats.Rebs)), 1) \
+                if (player_stats["Min"] * (team_game_stats.Rebs + opp_team_game_stats.Rebs)) != 0 else 0,
+
+            AST_P = round(100 * player_stats["AST"] / 
+                        (((player_stats["Min"] / (team_game_stats.Min / 5)) * team_game_stats.FG_M) - player_stats["FG"][0]), 1) \
+                if (((player_stats["Min"] / (team_game_stats.Min / 5)) * team_game_stats.FG_M) - player_stats["FG"][0]) != 0 else 0,
+
+            STL_P = round(100 * (player_stats["STL"] * (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * opp_team_game_stats.Poss), 1) \
+                if (player_stats["Min"] * opp_team_game_stats.Poss) != 0 else 0,
+
+            BLK_P = round(100 * (player_stats["BLK"] * (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * (opp_team_game_stats.FG_A - opp_team_game_stats._3P_A)), 1) \
+                if (player_stats["Min"] * (opp_team_game_stats.FG_A - opp_team_game_stats._3P_A)) != 0 else 0,
+
+            TO_P = round(100 * player_stats["TO"] / 
+                        (player_stats["FG"][1] + 0.44 * player_stats["FT"][1] + player_stats["TO"]), 1) \
+                if (player_stats["FG"][1] + 0.44 * player_stats["FT"][1] + player_stats["TO"]) != 0 else 0,
+
+            USG_P = round(100 * ((player_stats["FG"][1] + 0.44 * player_stats["FT"][1] + player_stats["TO"]) * 
+                                (team_game_stats.Min / 5)) / 
+                        (player_stats["Min"] * (team_game_stats.FG_A + 0.44 * team_game_stats.FT_A + team_game_stats.TO)), 1) \
+                if (player_stats["Min"] * (team_game_stats.FG_A + 0.44 * team_game_stats.FT_A + team_game_stats.TO)) != 0 else 0
+
+
         )
         db.session.add(player_avg)
     db.session.commit()
@@ -1272,7 +1377,7 @@ def add_game_helper(game_id):
     away_team_outcome = game_data["awayTeam"]["outcome"]
 
 
-    new_game = Game(game_id=game_data["gameCode"], game_type=game_type, season_id = season_id, 
+    new_game = Game(game_id=game_data["gameCode"], game_type=game_type, season_id = season_id,game_date = game_data["game_date"], 
                     home_team_id = homeTeamID, away_team_id = awayTeamID)
  
     db.session.add(new_game)  # Add the new player to the session

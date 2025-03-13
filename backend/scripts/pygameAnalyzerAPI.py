@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
+from datetime import datetime
 
 def save_html_to_file(content, filename):
     with open(filename, 'w', encoding='utf-8') as file:
@@ -529,6 +530,13 @@ def gameAnalyzer(gameURL):
     else:
         season = year
 
+    #Get Game Date and Convert it to date_int (For Sorting)
+    date_text = date.text
+    date_text = date_text[7:]
+    formatted_date = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_text)
+    date_obj = datetime.strptime(formatted_date, "%B %d, %Y")
+    date_int = int(date_obj.strftime("%Y%m%d")) #Holds date in integer format
+
 
 
 
@@ -542,6 +550,7 @@ def gameAnalyzer(gameURL):
     gameData["seasonYear"] = season
     gameData["gameCode"] = game_id
     gameData["gameType"] = game_type
+    gameData["game_date"] = date_int
 
     if gameData["awayTeam"]["stats"]["PTS"] > gameData["homeTeam"]["stats"]["PTS"]:
         gameData["awayTeam"]["outcome"] = 1
@@ -562,8 +571,7 @@ def gameAnalyzer(gameURL):
     return gameData
 
 #print(gameAnalyzer("http://onlinecollegebasketball.org/game/1027830"))
-x = gameAnalyzer("http://onlinecollegebasketball.org/game/1027830")
-print(x["homeTeam"]["players"][0]["stats"])
+
 '''
 #Checks if gameAnalyzer works for All games
 folder_path = "Backend/GamesHTML"  # Replace with your folder path
@@ -581,4 +589,4 @@ for index, game_file in enumerate(files):
         print(gameURL)
         print("did not work")
         break
-'''
+#'''

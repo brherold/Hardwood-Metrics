@@ -27,6 +27,7 @@ class Game(db.Model):
     game_id = db.Column(db.Integer, primary_key=True)
     game_type = db.Column(db.String)
     season_id = db.Column(db.Integer, db.ForeignKey('seasons.season_id'))
+    game_date = db.Column(db.Integer)
     home_team_id = db.Column(db.Integer, db.ForeignKey('teams.team_id'))
     away_team_id = db.Column(db.Integer, db.ForeignKey('teams.team_id'))
 
@@ -109,7 +110,6 @@ class TeamStats(db.Model):
     __tablename__ = "team_stats"
 
     game_id = db.Column(db.Integer, db.ForeignKey("games.game_id"), primary_key=True)
-    G = db.Column(db.Integer)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), primary_key=True)
     
     outcome = db.Column(db.Integer)
@@ -130,6 +130,7 @@ class TeamStats(db.Model):
     FT_A = db.Column(db.Integer)
     FT_P = db.Column(db.Float)
     Off = db.Column(db.Integer)
+    Def = db.Column(db.Integer)
     Rebs = db.Column(db.Integer)
     AST = db.Column(db.Integer)
     STL = db.Column(db.Integer)
@@ -270,7 +271,6 @@ class PlayerStats(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey("games.game_id"), primary_key=True)
     #season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"))
-    G = db.Column(db.Integer)
     
     Pos = db.Column(db.String)
     GS = db.Column(db.Integer)
@@ -289,6 +289,7 @@ class PlayerStats(db.Model):
     FT_A = db.Column(db.Integer)
     FT_P = db.Column(db.Float)
     Off = db.Column(db.Integer)
+    Def = db.Column(db.Integer)
     Rebs = db.Column(db.Integer)
     AST = db.Column(db.Integer)
     STL = db.Column(db.Integer)
@@ -430,6 +431,18 @@ class PlayerAvg(db.Model):
     OBPM = db.Column(db.Float)
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
+
+    TS = db.Column(db.Float)
+    _3PAr = db.Column(db.Float)
+    FTr = db.Column(db.Float)
+    ORB_P = db.Column(db.Float)
+    DRB_P = db.Column(db.Float)
+    TRB_P = db.Column(db.Float)
+    AST_P = db.Column(db.Float)
+    STL_P = db.Column(db.Float)
+    BLK_P = db.Column(db.Float)
+    TO_P = db.Column(db.Float)
+    USG_P = db.Column(db.Float)
 
     #game = db.relationship('Game', backref='player_game_info') #Allows to get seasonID and game_type from playerStats
     '''
