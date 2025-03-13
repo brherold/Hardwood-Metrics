@@ -445,8 +445,15 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             team_avg.OBPM = bpm_values[0]
             team_avg.DBPM = bpm_values[1]
             team_avg.BPM =  bpm_values[2]
-        
-        team_avg.GP = new_games_played #Last because Needed to calculate Avg for Stats Before
+
+            #Advanced Statistics
+            team_avg.TS = round((team_avg.PTS) / (2 * (team_avg.FG_A + 0.44 * team_avg.FT_A)), 3) if (team_avg.FG_A + 0.44 * team_avg.FT_A) != 0 else 0
+
+            team_avg._3PAr = round(team_avg._3P_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+
+            team_avg.FTr = round(team_avg.FT_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+            
+            team_avg.GP = new_games_played #Last because Needed to calculate Avg for Stats Before
             
 
 
@@ -534,6 +541,14 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             OBPM = bpm_values[0] if bpm_values else None, 
             DBPM = bpm_values[1] if bpm_values else None, 
             BPM =  bpm_values[2] if bpm_values else None,
+
+                        #Advanced Statistics
+            TS = round((team_stats["PTS"]) / (2 * (team_stats["FG"][1] + 0.44 * team_stats["FT"][1])), 3) \
+                if (team_stats["FG"][1] + 0.44 * team_stats["FT"][1]) != 0 else 0,
+
+            _3PAr = round(team_shots["3-Pointer"][1] / team_stats["FG"][1], 3) if team_stats["FG"][1] != 0 else 0,
+
+            FTr = round(team_stats["FT"][1] / team_stats["FG"][1], 3) if team_stats["FG"][1] != 0 else 0,
         )
         db.session.add(team_avg)
     db.session.commit()
@@ -1160,21 +1175,21 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         team_game_stats = (
             db.session.query(TeamStats)
             .filter_by(team_id=team_id_of_player)
-            .order_by(TeamStats.G.desc())  
+            .order_by(desc(TeamStats.game_id))  # Sorting by game_id in descending order
             .first()
         )
 
         game_result = (
             db.session.query(TeamStats.game_id)
             .filter_by(team_id=team_id_of_player)
-            .order_by(TeamStats.G.desc())
+            .order_by(desc(TeamStats.game_id))  # Sorting by game_id in descending order
             .first()
         )
 
         # Accessing the game_id from the result
         game_id = game_result[0] if game_result else None
 
-        #Gets opp stats from game
+        # Gets opponent stats from the same game
         opp_team_game_stats = (
             db.session.query(TeamStats)
             .filter(TeamStats.game_id == game_id)  

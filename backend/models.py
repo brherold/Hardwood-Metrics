@@ -251,6 +251,13 @@ class TeamAvg(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
+    TS = db.Column(db.Float)
+    _3PAr = db.Column(db.Float)
+    FTr = db.Column(db.Float)
+
+
+
+
 
     #game = db.relationship('Game', backref='team_game_info') #Allows to get seasonID and game_type from teamStats
     '''
