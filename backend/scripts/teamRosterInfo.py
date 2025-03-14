@@ -44,9 +44,8 @@ def team_roster_info(teamURL):
     cache_filename = os.path.join(cache_folder, f"{teamID}.html")
     teamRosterURL = "http://onlinecollegebasketball.org/roster/" + str(teamID)
 
-    
-    
-    if today in [3,6]: #If the day is Thursday or Sunday (Dev Days) 
+
+    if weekday_number in [3,6]: #If the day is Thursday or Sunday (Dev Days) 
         delete_file(cache_filename)
     try:
         # Try to load HTML content from the local cache

@@ -24,7 +24,6 @@ def delete_file(filename):
         print(f"{filename} does not exist.")
 
 
-#run python -m backend.scripts.dataAdder | python -m scripts.dataAdder
 
 def id_to_url(id):
     '''
@@ -128,6 +127,8 @@ while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
 '''
-add_games_for_team(540)
+add_games_for_team(533)
 
 
+
+#run python -m backend.scripts.dataAdder | python -m scripts.dataAdder

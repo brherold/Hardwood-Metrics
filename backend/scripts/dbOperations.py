@@ -7,13 +7,14 @@ from .predict import *
 from .getConferenceDivison import *
 from .getTeamConference import *
 from sqlalchemy import *
+from .sosFinder import *
 
 #DONT ADD OLD SEASON GAMES WHEN THIS IS HARDCODED
 #current_season = find_current_season()
 current_season = 2044
 #print(1)
 
-
+sos_dic = sos_holder()
 
 def id_to_url(id):
     '''
@@ -366,7 +367,6 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
         
         team_avg.GW += team_outcome
         new_games_played = team_avg.GP + 1
-
         
         team_avg.F_M = round(((team_avg.F_M * team_avg.GP) + team_shots["Finishing"][0]) / new_games_played, 3)
         team_avg.F_A = round(((team_avg.F_A * team_avg.GP) + team_shots["Finishing"][1]) / new_games_played, 3)
@@ -446,14 +446,22 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             team_avg.DBPM = bpm_values[1]
             team_avg.BPM =  bpm_values[2]
 
-            #Advanced Statistics
-            team_avg.TS = round((team_avg.PTS) / (2 * (team_avg.FG_A + 0.44 * team_avg.FT_A)), 3) if (team_avg.FG_A + 0.44 * team_avg.FT_A) != 0 else 0
+            #For Calculating Adjusted BPM (uses SOS)
+            if game_type == "College":
+                
+                team_sos = sos_dic[team_id]
+                team_avg.AOBPM = round(.75 * team_avg.OBPM + 25 * (team_sos - .5), 1)
+                team_avg.ADBPM = round(.75 * team_avg.DBPM + 25 * (team_sos - .5), 1)
+                team_avg.ABPM =  team_avg.AOBPM + team_avg.ADBPM 
 
-            team_avg._3PAr = round(team_avg._3P_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+        #Advanced Statistics
+        team_avg.TS = round((team_avg.PTS) / (2 * (team_avg.FG_A + 0.44 * team_avg.FT_A)), 3) if (team_avg.FG_A + 0.44 * team_avg.FT_A) != 0 else 0
 
-            team_avg.FTr = round(team_avg.FT_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+        team_avg._3PAr = round(team_avg._3P_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+
+        team_avg.FTr = round(team_avg.FT_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
             
-            team_avg.GP = new_games_played #Last because Needed to calculate Avg for Stats Before
+        team_avg.GP = new_games_played #Last because Needed to calculate Avg for Stats Before
             
 
 
@@ -473,6 +481,7 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
         else:
             #No BPM for opponent stats
             bpm_values = []
+        
         
     #First game for team
         team_avg = TeamAvg(
@@ -541,6 +550,10 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             OBPM = bpm_values[0] if bpm_values else None, 
             DBPM = bpm_values[1] if bpm_values else None, 
             BPM =  bpm_values[2] if bpm_values else None,
+
+            AOBPM = round(.75 * bpm_values[0] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None, 
+            ADBPM = round(.75 * bpm_values[1] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None, 
+            ABPM =  round(.75 * bpm_values[0] + 25 * (sos_dic[team_id] - .5), 1)  + round(.75 * bpm_values[1] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None,
 
             #Advanced Statistics
             TS = round((team_stats["PTS"]) / (2 * (team_stats["FG"][1] + 0.44 * team_stats["FT"][1])), 3) \
@@ -1134,6 +1147,15 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.OBPM = bpm_values[0]
         player_avg.DBPM = bpm_values[1]
         player_avg.BPM = bpm_values[2]
+
+        #For Calculating Adjusted BPM (uses SOS)
+        if game_type == "College":
+            team_id_of_player = str(team_id_of_player)
+    
+            team_sos = sos_dic[team_id_of_player]
+            player_avg.AOBPM = round(.75 * player_avg.OBPM + 25 * (team_sos - .5), 1)
+            player_avg.ADBPM = round(.75 * player_avg.DBPM + 25 * (team_sos - .5), 1)
+            player_avg.ABPM =  player_avg.AOBPM + player_avg.ADBPM         
         
         #Advanced Statistics
         player_avg.TS = round((player_avg.PTS) / (2 * (player_avg.FG_A + 0.44 * player_avg.FT_A)), 3) if (player_avg.FG_A + 0.44 * player_avg.FT_A) != 0 else 0
@@ -1209,6 +1231,10 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
                         player_stats["PF"]]
 
         bpm_values = predict_bpm(player_position,off_values,def_values)
+        if game_type == "College":
+            team_id_of_player = str(team_id_of_player)
+            team_sos = sos_dic[team_id_of_player]
+            
         
     #First game for team
         player_avg = PlayerAvg(
@@ -1306,6 +1332,11 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
             OBPM = bpm_values[0], 
             DBPM = bpm_values[1], 
             BPM =  bpm_values[2],
+
+            
+            AOBPM = round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None, 
+            ADBPM = round(.75 * bpm_values[1] + 25 * (team_sos- .5), 1) if bpm_values and game_type == "College" else None, 
+            ABPM =  round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1)  + round(.75 * bpm_values[1] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None,            
 
             #Advanced Statistics
             TS = round((player_stats["PTS"]) / (2 * (player_stats["FG"][1] + 0.44 * player_stats["FT"][1])), 3) \

@@ -251,6 +251,12 @@ class TeamAvg(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
+    #Adjusted BPM scores (uses SOS)
+    AOBPM = db.Column(db.Float)
+    ADBPM = db.Column(db.Float)
+    ABPM = db.Column(db.Float)
+    
+
     TS = db.Column(db.Float)
     _3PAr = db.Column(db.Float)
     FTr = db.Column(db.Float)
@@ -362,8 +368,8 @@ class PlayerAvg(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), primary_key=True)
     season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"), primary_key=True)
     game_type = db.Column(db.String, primary_key=True)
-    GP = db.Column(db.Integer) #Games Played
     GS = db.Column(db.Integer)
+    GP = db.Column(db.Integer) #Games Played
     #Minutes for Each Position
     PG_Min = db.Column(db.Float)
     SG_Min = db.Column(db.Float)
@@ -438,6 +444,12 @@ class PlayerAvg(db.Model):
     OBPM = db.Column(db.Float)
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
+
+    
+    #Adjusted BPM scores (uses SOS)
+    AOBPM = db.Column(db.Float)
+    ADBPM = db.Column(db.Float)
+    ABPM = db.Column(db.Float)
 
     TS = db.Column(db.Float)
     _3PAr = db.Column(db.Float)
