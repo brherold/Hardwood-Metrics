@@ -540,10 +540,10 @@ def gameAnalyzer(gameURL):
 
 
 
-    game_type_unparsed = type_id.text[15:].split(" ")[0]
+    game_type_unparsed = type_id.text[15:].split("]")[0].strip().strip("[")
     game_id_unparsed = type_id.text[15:].split(" ")[-2]
 
-    game_type = game_type_unparsed.strip("[]")
+    game_type = game_type_unparsed.split(" ")[-1]
 
     game_id = int(game_id_unparsed.strip("[]#"))
 
@@ -570,7 +570,7 @@ def gameAnalyzer(gameURL):
 
     return gameData
 
-#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1027830"))
+#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1025626"))
 
 '''
 #Checks if gameAnalyzer works for All games

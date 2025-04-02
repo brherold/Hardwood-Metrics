@@ -44,7 +44,9 @@ def team_roster_info(teamURL):
     cache_filename = os.path.join(cache_folder, f"{teamID}.html")
     teamRosterURL = "http://onlinecollegebasketball.org/roster/" + str(teamID)
 
-
+    ##
+    #weekday_number = 3
+    ##
     if weekday_number in [3,6]: #If the day is Thursday or Sunday (Dev Days) 
         delete_file(cache_filename)
     try:
@@ -119,7 +121,7 @@ def team_roster_info(teamURL):
     
     return teamData
 
-#print(team_roster_info("http://onlinecollegebasketball.org/team/533"))
+print(team_roster_info("http://onlinecollegebasketball.org/team/533"))
 
 
 

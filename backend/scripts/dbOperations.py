@@ -4,14 +4,15 @@ from .pygameAnalyzerAPI import *
 from .helperFunctions import *
 from scripts.teamRosterInfo import *
 from .predict import *
+from .predict_TAVG import *
 from .getConferenceDivison import *
 from .getTeamConference import *
 from sqlalchemy import *
 from .sosFinder import *
 
 #DONT ADD OLD SEASON GAMES WHEN THIS IS HARDCODED
-#current_season = find_current_season()
-current_season = 2044
+current_season = find_current_season()
+#current_season = 2044
 #print(1)
 
 sos_dic = sos_holder()
@@ -357,7 +358,7 @@ def get_or_add_team(team_id):
 
 
 #Updates Team Stat Averages for game
-def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shots, team_stats, opponent_shots,team_conference_id): 
+def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shots, team_stats, opponent_stats,team_conference_id): 
     team_avg = db.session.query(TeamAvg).filter_by(team_id = team_id,season_id = season_id,game_type=game_type,stat_type = stat_type).first()
 
 
@@ -432,15 +433,18 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
         if stat_type != "opponent":
             opp_avg = db.session.query(TeamAvg).filter_by(team_id = team_id,season_id = season_id,game_type=game_type,stat_type = "opponent").first()
             #Prep for BPM Training 
+            
+            # Format: [Poss,Pts,FGA,FTA,Off,AST,TO,FD]
             off_values = [team_avg.Poss, team_avg.PTS,team_avg.FG_A,
                             team_avg.FT_A,team_avg.Off,team_avg.AST,
                             team_avg.TO,team_avg.FD]
-
-            def_values = [opp_avg.Poss, opp_avg.PTS,opp_avg.FG_A,
-                            team_avg.Rebs -  team_avg.Off, team_avg.STL,
+            
+            # Format: [OPoss,OPTS,OFGA,OFTA,DReb,STL,PF]
+            def_values = [opp_avg.Poss, opp_avg.PTS,opp_avg.FG_A, opp_avg.FT_A,
+                            team_avg.Def, team_avg.STL,
                             team_avg.PF]
 
-            bpm_values = predict_bpm("team",off_values,def_values)
+            bpm_values = predict_bpm_tavg("team",off_values,def_values)
 
             team_avg.OBPM = bpm_values[0]
             team_avg.DBPM = bpm_values[1]
@@ -472,12 +476,13 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             off_values = [team_stats["Poss"], team_stats["PTS"],team_stats["FG"][1],
                             team_stats["FT"][1],team_stats["Off"],team_stats["AST"],
                             team_stats["TO"],team_stats["FD"]]
-
-            def_values = [team_stats["OPoss"], team_stats["OPTS"],team_stats["OFG"][1],
+            
+            # Format: [OPoss,OPTS,OFGA,OFTA,DReb,STL,PF]
+            def_values = [team_stats["OPoss"], team_stats["OPTS"],team_stats["OFG"][1],opponent_stats["FT"][1],
                             team_stats["Reb"] -  team_stats["Off"], team_stats["STL"],
                             team_stats["PF"]]
 
-            bpm_values = predict_bpm("team",off_values,def_values)
+            bpm_values = predict_bpm_tavg("team",off_values,def_values)
         else:
             #No BPM for opponent stats
             bpm_values = []
@@ -1452,12 +1457,12 @@ def add_game_helper(game_id):
     
     if game_type not in EXCLUDED_AVG_GAME_TYPES:
         #Updates Team Avg
-        update_team_avg(homeTeamID,season_id,game_data["gameType"],"team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["totalShots"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,game_data["gameType"],"team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["totalShots"],away_team_conference_id)
+        update_team_avg(homeTeamID,season_id,game_data["gameType"],"team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,game_data["gameType"],"team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
 
         #Updates Opponent Team Avg
-        update_team_avg(homeTeamID,season_id,game_data["gameType"],"opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["totalShots"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,game_data["gameType"],"opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["totalShots"],away_team_conference_id)
+        update_team_avg(homeTeamID,season_id,game_data["gameType"],"opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,game_data["gameType"],"opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],away_team_conference_id)
     
         #all_players is only iterated if it has values
         for player in all_players:
@@ -1474,12 +1479,12 @@ def add_game_helper(game_id):
 
     if game_type not in EXCLUDED_GAME_TYPES:
         #Updates Team Avg
-        update_team_avg(homeTeamID,season_id,"College","team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["totalShots"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,"College","team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["totalShots"],away_team_conference_id)
+        update_team_avg(homeTeamID,season_id,"College","team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,"College","team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
 
         #Updates Opponent Team Avg
-        update_team_avg(homeTeamID,season_id,"College","opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["totalShots"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,"College","opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["totalShots"],away_team_conference_id)
+        update_team_avg(homeTeamID,season_id,"College","opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,"College","opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],away_team_conference_id)
 
         #Update Stats for All players aswell  
         for player in all_players:
