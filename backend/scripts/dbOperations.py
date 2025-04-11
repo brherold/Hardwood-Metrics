@@ -1074,8 +1074,28 @@ def add_player_stats(game_data):
     except Exception as e:
         print(f"An error occurred: {e}")
         db.session.rollback()  # Rollback the transaction in case of an error
-    
 
+#Gets position player played most in (in player avg) for caclulating BPM 
+def get_position_with_max_minutes(player_id, season_id, game_type):
+    pos_min = db.session.query(PlayerAvg).filter_by(
+        player_id=player_id,
+        season_id=season_id,
+        game_type=game_type
+    ).first()
+
+    minutes = {
+        'PG': pos_min.PG_Min,
+        'SG': pos_min.SG_Min,
+        'SF': pos_min.SF_Min,
+        'PF': pos_min.PF_Min,
+        'C': pos_min.C_Min
+    }
+
+    max_position = max(minutes, key=minutes.get)
+    max_minutes = minutes[max_position]
+
+    print(f"Max position: {max_position} with {max_minutes} minutes")
+    return max_position
 
 #Updates Player Stat Averages for game
 def update_player_avg(player_id,season_id,game_type,player_position,player_shots,player_defense,player_stats,player_pos_min): 
@@ -1185,7 +1205,9 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.FD = round(((player_avg.FD * player_avg.GP) + player_stats["FD"]) / new_games_played, 3)
         player_avg.Poss = round(((player_avg.Poss * player_avg.GP) + player_stats["Poss"]) / new_games_played, 3)
 
+
         # Prep for BPM Training 
+        player_postion_played_most = get_position_with_max_minutes(player_id,season_id,game_type) #Gets postion player has played most in 
         Poss = player_avg.Poss
         O_Poss = player_avg.O_Poss
         off_values = [player_avg.PTS, player_avg.FG_A,
@@ -1196,7 +1218,7 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
                         player_avg.Rebs -  player_avg.Off, player_avg.STL,
                         player_avg.PF]
 
-        bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)        
+        bpm_values = predict_bpm(player_postion_played_most if player_postion_played_most else player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)        
         
 
 
