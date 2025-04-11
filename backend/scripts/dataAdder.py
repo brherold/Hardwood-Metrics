@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 #from .helperFunctions import *
 import os
 
+current_season = 2045
     
 #Caching Team Schedule (TeamsHTML) for Year
 def save_html_to_file(content, filename):
@@ -42,7 +43,7 @@ def team_games_played(team_id):
 
     cache_folder = "backend/TeamsHTML"
     
-    cache_filename = os.path.join(cache_folder, f"{team_id}-{2044}.html")
+    cache_filename = os.path.join(cache_folder, f"{team_id}-{current_season}.html")
     
     
     try:
@@ -79,6 +80,7 @@ def team_games_played(team_id):
 API_URL = "http://127.0.0.1:5000/"
 team_post_API_URL = API_URL + "teams"
 game_post_API_URL = API_URL + "games"
+roster_post_API_URL = API_URL + "roster"
 
 
 def addTeam(team_id):
@@ -87,12 +89,7 @@ def addTeam(team_id):
 
     print(f"Adding team {team_id}: {response.status_code} - {response.json()}")
 
-'''
-team_id = 1
-while(team_id < 1000):
-    addTeam(team_id)
-    team_id += 1
-'''
+
 
 def addGame(game_url):
     response = requests.post(game_post_API_URL,json={"game_url": game_url})
@@ -121,14 +118,25 @@ def add_games_for_team(team_id):
     print()
 
 
-#''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
+''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
 while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
-#'''
-#add_games_for_team(533)
+'''
+add_games_for_team(1)
 
+def updateTeamRoster(team_id):
+    response = requests.post(roster_post_API_URL,json={"teamID": team_id})
 
+    print(f"Updating team {team_id}: {response.status_code} - {response.json()}")
+
+''' Updates Team Roster for Team (Player Skills)
+team_id = 947
+while(team_id < 1009):
+    updateTeamRoster(team_id)
+    team_id += 1
+
+'''
 
 #run python -m backend.scripts.dataAdder | python -m scripts.dataAdder

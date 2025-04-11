@@ -6,12 +6,7 @@ from datetime import *
 import os
 
 
-#For not only updating TeamRosterInfo (checking in TeamRosterPage Folder) when its Thursday or Sunday (Development Days)
 
-today = date.today()
-
-# Get weekday as an integer (Monday is 0, Sunday is 6) (3 or 6)
-weekday_number = today.weekday()
 
 
 
@@ -34,21 +29,19 @@ def delete_file(filename):
 #run in terminal: python -m scripts.teamRosterInfo
 
 #Outputs dictionary of team w/ team_name, team_id, players and their skills using the team's roster link
-def team_roster_info(teamURL):
+def team_roster_info(teamURL,season):
 
 
     cache_folder = "backend/TeamRosterPage"
 
 
     teamID = int(teamURL.split("/")[-1])
-    cache_filename = os.path.join(cache_folder, f"{teamID}.html")
+    cache_filename = os.path.join(cache_folder, f"{teamID}-{season}.html")
     teamRosterURL = "http://onlinecollegebasketball.org/roster/" + str(teamID)
 
-    ##
-    #weekday_number = 3
-    ##
-    if weekday_number in [3,6]: #If the day is Thursday or Sunday (Dev Days) 
-        delete_file(cache_filename)
+    
+
+
     try:
         # Try to load HTML content from the local cache
         page = load_html_from_file(cache_filename)
@@ -91,10 +84,10 @@ def team_roster_info(teamURL):
         teamData["players"].append({
             "name": player[0].text[:-1],
             "playerID": int(playerSoup.find_all("td")[3].find("a").get("href")[8:]),
-            "Height": convert_to_inches(player[1].text),
-            "Weight": float(playerAthletics[1].split(":")[1].split(" ")[2]),
-            "Wingspan": convert_to_inches(playerAthletics[2].split(":")[1][2:]),
-            "Vertical": Vert_convert_to_inches(playerAthletics[3].split(":")[1][2:]),
+            "height": convert_to_inches(player[1].text),
+            "weight": float(playerAthletics[1].split(":")[1].split(" ")[2]),
+            "wingspan": convert_to_inches(playerAthletics[2].split(":")[1][2:]),
+            "vertical": Vert_convert_to_inches(playerAthletics[3].split(":")[1][2:]),
             "Pos": player[16].text,
             "Class": player[20].text,
             "IS": int(player[2].text),
@@ -121,7 +114,21 @@ def team_roster_info(teamURL):
     
     return teamData
 
-print(team_roster_info("http://onlinecollegebasketball.org/team/533"))
+#print(team_roster_info("http://onlinecollegebasketball.org/team/353",2045))
 
 
+'''
+folder_path = "backend/TeamRosterPage"  # Change this to your target folder
 
+for filename in os.listdir(folder_path):
+    old_path = os.path.join(folder_path, filename)
+
+    if os.path.isfile(old_path):  # Ensure it's a file, not a folder
+        name, ext = os.path.splitext(filename)
+        new_filename = f"{name}-2044{ext}"
+        new_path = os.path.join(folder_path, new_filename)
+        
+        os.rename(old_path, new_path)
+
+print("Renaming complete.")
+'''

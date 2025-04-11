@@ -197,10 +197,20 @@ def game():
         pass
 
 
+#Update TeamRoster (Player Skills for a Team)
+@app.route("/roster",methods=["POST"])
+def update_team_roster():
+    teamID = request.json.get("teamID")
+    try: 
+        update_team_roster_db(teamID)
+        return jsonify({
+            "message": "Updated Team Roster and Player Skills"
+        })
+    except:
+        return jsonify({
+            "message: Error"
+        })
 
-
-#Test Get Request for Game 
-#
 
 
 

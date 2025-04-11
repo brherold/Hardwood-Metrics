@@ -13,7 +13,7 @@ from .sosFinder import *
 #DONT ADD OLD SEASON GAMES WHEN THIS IS HARDCODED
 current_season = find_current_season()
 #current_season = 2044
-#print(1)
+
 
 sos_dic = sos_holder()
 
@@ -109,7 +109,7 @@ def add_to_player(player_id):
 
 def add_to_playerSkills(player_id):
     # Adds or updates playerID in PlayerSkills Table
-
+    print(f"Adding skills for {player_id}")
     player_url = id_to_url(player_id)
     player_data = get_player_info(player_url)
 
@@ -167,7 +167,8 @@ def add_to_playerSkills(player_id):
         )
 
         db.session.add(new_player_skills)  # Add the new player skills to the session
-        db.session.commit()  
+        db.session.commit() 
+        print(f"{player_id} skills added")
         return new_player_skills, "Player skills added successfully"
 
 def get_or_add_player(player_id):
@@ -216,12 +217,12 @@ def update_player_helper(player_id):
     new_player = get_or_add_player(player_id)
 
     return new_player
-
+'''
 def team_data_to_playerDB(team_data):
-    '''
-    Adds team_data from team_roster_info(teamURL) to player and playerSkills table
-    Updates player skills
-    '''
+
+    #Adds team_data from team_roster_info(teamURL) to player and playerSkills table
+    #Updates player skills
+
     teamID = team_data["teamID"]
     for player in team_data["players"]:
         player_name = player["name"]
@@ -332,10 +333,50 @@ def team_data_to_playerDB(team_data):
         db.session.add(new_player_skills)  # Add the new player skills to the session
         db.session.commit()
     return 
+'''
+def team_data_to_playerDB(team_data):
+    """
+    Adds new players from team_data to the Player and PlayerSkills tables.
+    Does NOT update existing players or skills.
+    """
+    teamID = team_data["teamID"]
+    
+    for player in team_data["players"]:
+        player_id = player["playerID"]
+        player_name = player["name"]
 
+        # Check if player already exists
+        existing_player = Player.query.filter_by(player_id=player_id).first()
+
+        if not existing_player:
+            # Add new player
+            new_player = Player(player_id=player_id, team_id=teamID, name=player_name)
+            db.session.add(new_player)
+
+        # Check if player skills already exist for this season
+        existing_skills = PlayerSkills.query.filter_by(
+            player_id=player_id, season_id=current_season
+        ).first()
+
+        if not existing_skills:
+            # Add new player skills
+            new_player_skills = PlayerSkills(
+                player_id=player_id,
+                season_id=current_season,
+                **{attr: player[attr] for attr in [
+                    "Pos", "Class", "height", "weight", "wingspan", "vertical",
+                    "IS", "IQ", "OS", "Pass", "Rng", "Hnd", "Fin", "Drv", "Reb",
+                    "Str", "IDef", "Spd", "PDef", "Sta", "SI", "POT", "Stars"
+                ]}
+            )
+            db.session.add(new_player_skills)
+
+    # Commit all new players and skills in one transaction
+    db.session.commit()
+    
 def get_or_add_team(team_id):
     '''
-    Check or add a team to the DB using the team_id
+    Check or add a team to the DB using the team_id and given season
     '''
     existing_team = Team.query.filter_by(team_id=team_id).first()
     
@@ -346,7 +387,7 @@ def get_or_add_team(team_id):
     team_url = id_to_url(team_id)
     
     
-    team_data = team_roster_info(team_url)
+    team_data = team_roster_info(team_url,current_season)
     team_data_to_playerDB(team_data)
     
     new_team = Team(team_id = team_data["teamID"], team_name = team_data["teamName"]) 
@@ -583,17 +624,20 @@ def create_team_stats(game_id, team_id, team_outcome, team_shots, team_stats, op
 
 
     
-
+                        #       [PTS, FGA, FTA, Off, AST, TO, FD]
     #Prep for BPM Training 
-    off_values = [team_stats["Poss"], team_stats["PTS"],team_stats["FG"][1],
+    Poss = team_stats["Poss"]
+    O_Poss = team_stats["OPoss"]
+    off_values = [team_stats["PTS"],team_stats["FG"][1],
                       team_stats["FT"][1],team_stats["Off"],team_stats["AST"],
                       team_stats["TO"],team_stats["FD"]]
-
-    def_values = [team_stats["OPoss"], team_stats["OPTS"],team_stats["OFG"][1],
+    
+                        #def_values = [OPTS, OFGA, Def, STL, PF]
+    def_values = [ team_stats["OPTS"],team_stats["OFG"][1],
                       team_stats["Reb"] -  team_stats["Off"], team_stats["STL"],
                       team_stats["PF"]]
 
-    bpm_values = predict_bpm("team",off_values,def_values)
+    bpm_values = predict_bpm("team",Poss,O_Poss,off_values,def_values)#predict_bpm("team",off_values,def_values)
 
 
     return TeamStats(
@@ -857,17 +901,20 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     '''
 
 
-
+    Poss = player_stats["Poss"]
+    O_Poss = player_stats["OPoss"]
     #Prep for BPM Training 
-    off_values = [player_stats["Poss"], player_stats["PTS"],player_stats["FG"][1],
+    #off_values = [PTS, FGA, FTA, Off, AST, TO, FD]
+    off_values = [ player_stats["PTS"],player_stats["FG"][1],
                       player_stats["FT"][1],player_stats["Off"],player_stats["AST"],
                       player_stats["TO"],player_stats["FD"]]
-
-    def_values = [player_stats["OPoss"], player_stats["OPTS"],player_stats["OFG"][1],
+    
+    #def_values = [OPTS, OFGA, Def, STL, PF]
+    def_values = [player_stats["OPTS"],player_stats["OFG"][1],
                       player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],
                       player_stats["PF"]]
 
-    bpm_values = predict_bpm(player_position,off_values,def_values)
+    bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)
     
     return PlayerStats(
         player_id = player_id,
@@ -984,9 +1031,11 @@ def add_player_stats(game_data):
             player_stats = player["stats"]
             new_player = create_player_stats(player_id,game_id,player_position,player_shots,player_defense,player_stats)
             
-
+            
             db.session.add(new_player)
+            
 
+            
             #Add players in Players Table and PlayerSkills Table if game in currrent season
             if season_year == current_season:
                 #update_player_helper(player_id) 
@@ -1137,15 +1186,17 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.Poss = round(((player_avg.Poss * player_avg.GP) + player_stats["Poss"]) / new_games_played, 3)
 
         # Prep for BPM Training 
-        off_values = [player_avg.Poss, player_avg.PTS, player_avg.FG_A,
+        Poss = player_avg.Poss
+        O_Poss = player_avg.O_Poss
+        off_values = [player_avg.PTS, player_avg.FG_A,
                     player_avg.FT_A, player_avg.Off, player_avg.AST,
                     player_avg.TO, player_avg.FD]
         
-        def_values = [player_avg.O_Poss, player_avg.O_PTS,player_avg.O_FG_A,
+        def_values = [player_avg.O_PTS,player_avg.O_FG_A,
                         player_avg.Rebs -  player_avg.Off, player_avg.STL,
                         player_avg.PF]
 
-        bpm_values = predict_bpm(player_position,off_values,def_values)        
+        bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)        
         
 
 
@@ -1227,15 +1278,18 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
        
         
         #Prep for BPM Training 
-        off_values = [player_stats["Poss"], player_stats["PTS"],player_stats["FG"][1],
+        Poss = player_stats["Poss"]
+        O_Poss = player_stats["OPoss"]
+
+        off_values = [player_stats["PTS"],player_stats["FG"][1],
                         player_stats["FT"][1],player_stats["Off"],player_stats["AST"],
                         player_stats["TO"],player_stats["FD"]]
 
-        def_values = [player_stats["OPoss"], player_stats["OPTS"],player_stats["OFG"][1],
+        def_values = [ player_stats["OPTS"],player_stats["OFG"][1],
                         player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],
                         player_stats["PF"]]
 
-        bpm_values = predict_bpm(player_position,off_values,def_values)
+        bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)
         if game_type == "College":
             team_id_of_player = str(team_id_of_player)
             team_sos = sos_dic[team_id_of_player]
@@ -1434,10 +1488,22 @@ def add_game_helper(game_id):
     db.session.add(new_game)  # Add the new player to the session
     db.session.commit()  # Commit the transaction
 
-    #Adds both home and away teams to the DB 
+    #Adds both home and away teams to the DB (does not check if Team's players' skills are added in given season)
     get_or_add_team(homeTeamID)
     get_or_add_team(awayTeamID)
 
+    if season_id == current_season:
+        print("Yes game is current season")
+        #Adds Team player's skills for given season (if not added already) (only for current season)
+        
+        homeTeamURL = id_to_url(homeTeamID)  
+        awayTeamURL = id_to_url(awayTeamID) 
+
+        homeTeamRoster = team_roster_info(homeTeamURL,season_id)
+        awayTeamRoster = team_roster_info(awayTeamURL,season_id)
+        team_data_to_playerDB(homeTeamRoster)
+        team_data_to_playerDB(awayTeamRoster)
+    
     #Add Game Data to Team_stats/offensive_stats/defensive_stats/player_stats
     game_data_to_team_stats(game_data)
     game_data_to_team_off_deff_stats(game_data)
@@ -1493,3 +1559,73 @@ def add_game_helper(game_id):
 
 
     return new_game
+
+#Updates Team Roster for current Season 
+def update_team_roster_db(teamID):
+    """
+    Adds new players to the Player and PlayerSkills tables.
+    Updates existing players' team and name.
+    Updates existing player skills for the current season.
+    """
+    teamURL = id_to_url(teamID)
+
+    teamRosterFolder = "backend/TeamRosterPage"
+    team_file = os.path.join(teamRosterFolder, f"{teamID}-{current_season}.html")
+
+    delete_file(team_file)
+    team_data = team_roster_info(teamURL,current_season)
+
+
+    teamID = team_data["teamID"]
+
+    for player in team_data["players"]:
+        player_id = player["playerID"]
+        player_name = player["name"]
+
+        # Check if player already exists
+        existing_player = Player.query.filter_by(player_id=player_id).first()
+
+        if existing_player:
+            # Update player information if needed
+            existing_player.team_id = teamID
+            existing_player.name = player_name
+        else:
+            # Add new player
+            new_player = Player(player_id=player_id, team_id=teamID, name=player_name)
+            db.session.add(new_player)
+
+        # Check if player skills exist for the current season
+        existing_skills = PlayerSkills.query.filter_by(player_id=player_id, season_id=current_season).first()
+        skill_data = {
+            "Pos": player.get("Pos"),
+            "Class": player.get("Class"),
+            "IS": player.get("IS"),
+            "IQ": player.get("IQ"),
+            "OS": player.get("OS"),
+            "Pass": player.get("Pass"),
+            "Rng": player.get("Rng"),
+            "Hnd": player.get("Hnd"),
+            "Fin": player.get("Fin"),
+            "Drv": player.get("Drv"),
+            "Reb": player.get("Reb"),
+            "Str": player.get("Str"),
+            "IDef": player.get("IDef"),
+            "Spd": player.get("Spd"),
+            "PDef": player.get("PDef"),
+            "Sta": player.get("Sta"),
+            "SI": player.get("SI"),
+            "POT": player.get("POT"),
+            "Stars": player.get("Stars")
+        }
+
+        if existing_skills:
+            # Update existing skills
+            for key, value in skill_data.items():
+                setattr(existing_skills, key, value)
+        else:
+            # Add new player skills
+            new_player_skills = PlayerSkills(player_id=player_id, season_id=current_season, **skill_data)
+            db.session.add(new_player_skills)
+
+    # Commit all changes in one transaction
+    db.session.commit()
