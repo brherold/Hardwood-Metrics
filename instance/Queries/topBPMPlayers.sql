@@ -11,12 +11,16 @@ SELECT
     pavg.Min,
     pavg.OBPM, 
     pavg.DBPM, 
-    pavg.BPM
+    pavg.BPM,
+	pavg.OEPM,
+	pavg.DEPM,
+	pavg.EPM
 FROM players p
 JOIN player_avg pavg ON pavg.player_id = p.player_id
 JOIN players_skills psk ON psk.player_id = p.player_id
 WHERE pavg.game_type = 'College'
   AND pavg.season_id = 2044
+  AND psk.season_id = 2044
   AND pavg.GP >= 20 
   AND pavg.Min >= 10
 ORDER BY pavg.BPM DESC;

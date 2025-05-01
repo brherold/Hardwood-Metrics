@@ -118,13 +118,13 @@ def add_games_for_team(team_id):
     print()
 
 
-''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
+#''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
 while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
-'''
-add_games_for_team(1)
+#'''
+#add_games_for_team(165)
 
 def updateTeamRoster(team_id):
     response = requests.post(roster_post_API_URL,json={"teamID": team_id})
@@ -132,7 +132,7 @@ def updateTeamRoster(team_id):
     print(f"Updating team {team_id}: {response.status_code} - {response.json()}")
 
 ''' Updates Team Roster for Team (Player Skills)
-team_id = 947
+team_id = 1
 while(team_id < 1009):
     updateTeamRoster(team_id)
     team_id += 1

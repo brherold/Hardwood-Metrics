@@ -9,6 +9,7 @@ from .getConferenceDivison import *
 from .getTeamConference import *
 from sqlalchemy import *
 from .sosFinder import *
+from .predictEPM import *
 
 #DONT ADD OLD SEASON GAMES WHEN THIS IS HARDCODED
 current_season = find_current_season()
@@ -900,10 +901,10 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
     Inputs player_id, game_id, player_shots,... and puts in PlayerStats db 
     '''
 
-
+    #Prep for BPM Training 
     Poss = player_stats["Poss"]
     O_Poss = player_stats["OPoss"]
-    #Prep for BPM Training 
+    
     #off_values = [PTS, FGA, FTA, Off, AST, TO, FD]
     off_values = [ player_stats["PTS"],player_stats["FG"][1],
                       player_stats["FT"][1],player_stats["Off"],player_stats["AST"],
@@ -916,6 +917,15 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
 
     bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)
     
+    #EPM 
+                    #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
+    off_values_epm = [player_stats["PTS"], player_stats["FG"][1], player_stats["FT"][1], player_stats["3P"][0],player_stats["Off"]
+                      ,player_stats["Reb"] -  player_stats["Off"],player_stats["AST"],player_stats["STL"], player_stats["BLK"], player_stats["TO"], player_stats["PF"], player_stats["FD"]]
+                    #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
+    def_values_epm  = [player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],player_stats["TO"],player_stats["PF"], player_stats["OFG"][1], player_stats["OPTS"]]
+
+    epm_values = predict_epm(player_position,Poss, O_Poss, off_values_epm,def_values_epm)
+
     return PlayerStats(
         player_id = player_id,
         game_id=game_id,
@@ -996,7 +1006,11 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
             
         OBPM = bpm_values[0], 
         DBPM = bpm_values[1], 
-        BPM =  bpm_values[2]
+        BPM =  bpm_values[2],
+
+        OEPM = epm_values[0],
+        DEPM = epm_values[1], 
+        EPM = epm_values[2]
         )
     
 
@@ -1094,7 +1108,7 @@ def get_position_with_max_minutes(player_id, season_id, game_type):
     max_position = max(minutes, key=minutes.get)
     max_minutes = minutes[max_position]
 
-    print(f"Max position: {max_position} with {max_minutes} minutes")
+    #print(f"Max position: {max_position} with {max_minutes} minutes")
     return max_position
 
 #Updates Player Stat Averages for game
@@ -1225,6 +1239,23 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.OBPM = bpm_values[0]
         player_avg.DBPM = bpm_values[1]
         player_avg.BPM = bpm_values[2]
+        
+        #EPM 
+                        #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
+        off_values_epm = [player_avg.PTS, player_avg.FG_A, player_avg.FT_A, player_avg._3P_M, player_avg.Off, player_avg.Def, player_avg.AST, 
+                          player_avg.STL, player_avg.BLK, player_avg.TO, player_avg.PF, player_avg.FD]
+                        #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
+        def_values_epm  = [player_avg.Def, player_avg.STL, player_avg.TO,player_avg.PF,player_avg.O_FG_A,player_avg.O_PTS]
+
+        
+        epm_values = predict_epm(player_postion_played_most if player_postion_played_most else player_position,Poss, O_Poss, off_values_epm,def_values_epm)
+
+        player_avg.OEPM = epm_values[0]
+        player_avg.DEPM = epm_values[1]
+        player_avg.EPM = epm_values[2]
+
+
+
 
         #For Calculating Adjusted BPM (uses SOS)
         if game_type == "College":
@@ -1312,12 +1343,25 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
                         player_stats["PF"]]
 
         bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)
+
+        #EPM Training
+                    #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
+        off_values_epm = [player_stats["PTS"], player_stats["FG"][1], player_stats["FT"][1], player_stats["3P"][0],player_stats["Off"]
+                        ,player_stats["Reb"] -  player_stats["Off"],player_stats["AST"],player_stats["STL"], player_stats["BLK"], player_stats["TO"], player_stats["PF"], player_stats["FD"]]
+                        #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
+        def_values_epm  = [player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],player_stats["TO"],player_stats["PF"], player_stats["OFG"][1], player_stats["OPTS"]]
+
+        epm_values = predict_epm(player_position,Poss, O_Poss, off_values_epm,def_values_epm)
+
+
+
+
         if game_type == "College":
             team_id_of_player = str(team_id_of_player)
             team_sos = sos_dic[team_id_of_player]
             
         
-    #First game for team
+    #First game for player
         player_avg = PlayerAvg(
         
             player_id=player_id,
@@ -1417,7 +1461,11 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
             
             AOBPM = round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None, 
             ADBPM = round(.75 * bpm_values[1] + 25 * (team_sos- .5), 1) if bpm_values and game_type == "College" else None, 
-            ABPM =  round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1)  + round(.75 * bpm_values[1] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None,            
+            ABPM =  round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1)  + round(.75 * bpm_values[1] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None,  
+
+            OEPM = epm_values[0],
+            DEPM = epm_values[1],
+            EPM = epm_values[2] ,        
 
             #Advanced Statistics
             TS = round((player_stats["PTS"]) / (2 * (player_stats["FG"][1] + 0.44 * player_stats["FT"][1])), 3) \
@@ -1515,7 +1563,6 @@ def add_game_helper(game_id):
     get_or_add_team(awayTeamID)
 
     if season_id == current_season:
-        print("Yes game is current season")
         #Adds Team player's skills for given season (if not added already) (only for current season)
         
         homeTeamURL = id_to_url(homeTeamID)  

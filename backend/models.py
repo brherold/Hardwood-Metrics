@@ -353,6 +353,11 @@ class PlayerStats(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
+    #Real BPM (testing)
+    OEPM = db.Column(db.Float)
+    DEPM = db.Column(db.Float)
+    EPM = db.Column(db.Float)
+
 
     game = db.relationship('Game', backref='player_game_info') #Allows to get seasonID and game_type from playerStats
     '''
@@ -445,11 +450,15 @@ class PlayerAvg(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
-    
     #Adjusted BPM scores (uses SOS)
     AOBPM = db.Column(db.Float)
     ADBPM = db.Column(db.Float)
     ABPM = db.Column(db.Float)
+
+    #Real BPM (testing)
+    OEPM = db.Column(db.Float)
+    DEPM = db.Column(db.Float)
+    EPM = db.Column(db.Float)
 
     TS = db.Column(db.Float)
     _3PAr = db.Column(db.Float)
