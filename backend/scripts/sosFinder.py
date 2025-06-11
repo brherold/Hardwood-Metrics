@@ -61,11 +61,17 @@ def sos_holder():
 
     teamsTrArr = soup.find("table").find_all("tr")[1:]
 
-    teamSOSDic = {}
+
+
+    teamRankDic = {}
     for teamTr in teamsTrArr:
         teamID = teamTr.find_all("td")[1].find("a")["href"].split("/")[-1]
+        teamRPI = float(teamTr.find_all("td")[7].text)
         teamSOS = float(teamTr.find_all("td")[8].text)
-        teamSOSDic[teamID] = teamSOS
+        teamRankDic[teamID] = teamSOS, teamRPI
         
-    return teamSOSDic
+    return teamRankDic
 
+#print(sos_holder())
+
+# python -m backend.scripts.sosFinder

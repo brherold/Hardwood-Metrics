@@ -1,4 +1,5 @@
 SELECT 
+	g.game_id,
     g.game_type,
     g.game_date,
 

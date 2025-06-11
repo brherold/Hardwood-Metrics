@@ -53,12 +53,21 @@ ranked AS (
         -- Negative stats (lower is better)
         RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t."TO" ASC) AS "TO",
         RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.PF ASC) AS PF,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.TO_P ASC) AS TO_P,
         
         -- Neutral stats
         RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.DIST DESC) AS DIST,
         RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.Poss DESC) AS Poss,
         RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t._3PAr DESC) AS _3PAr,
-        RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.FTr DESC) AS FTr
+        RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.FTr DESC) AS FTr,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.ORtg DESC) AS ORtg,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.NetRtg DESC) AS NetRtg,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.FT_FG_A DESC) AS FT_FG_A,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.ORB_P DESC) AS ORB_P,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.DRB_P DESC) AS DRB_P,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.SOS DESC) AS SOS,
+		RANK() OVER (PARTITION BY t.conference_id, t.season_id, t.game_type, t.stat_type ORDER BY t.RPI DESC) AS RPI
+		
 
     FROM team_avg t
     JOIN context c

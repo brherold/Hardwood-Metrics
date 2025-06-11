@@ -4,7 +4,9 @@ from bs4 import BeautifulSoup
 #from .helperFunctions import *
 import os
 
-current_season = 2045
+current_season = 2046
+
+post_season = False #If playoffs + are occurring make this True (means have to reOpen TeamsHTML pages for every team (new games ))
     
 #Caching Team Schedule (TeamsHTML) for Year
 def save_html_to_file(content, filename):
@@ -45,19 +47,29 @@ def team_games_played(team_id):
     
     cache_filename = os.path.join(cache_folder, f"{team_id}-{current_season}.html")
     
-    
-    try:
-        # Try to load HTML content from the local cache
-        page = load_html_from_file(cache_filename)
-        
-        
-    except FileNotFoundError:
-        # If not found, fetch the content from the URL
+    #If in exhibition/non-conf/conf games currently
+    if post_season == False:
+        try:
+            # Try to load HTML content from the local cache
+            page = load_html_from_file(cache_filename)
+            
+            
+        except FileNotFoundError:
+            # If not found, fetch the content from the URL
+            page = requests.get(teamScheduleUrl)
+
+            # Save HTML content to the local cache
+            save_html_to_file(page.text, cache_filename)
+            page = page.text 
+
+    #If playoffs + games started 
+    else:
         page = requests.get(teamScheduleUrl)
 
         # Save HTML content to the local cache
         save_html_to_file(page.text, cache_filename)
         page = page.text 
+
 
 
     soup = BeautifulSoup(page, "html.parser")
@@ -118,13 +130,13 @@ def add_games_for_team(team_id):
     print()
 
 
-#''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
+''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
 while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
-#'''
-#add_games_for_team(165)
+'''
+
 
 def updateTeamRoster(team_id):
     response = requests.post(roster_post_API_URL,json={"teamID": team_id})
@@ -138,5 +150,14 @@ while(team_id < 1009):
     team_id += 1
 
 '''
-
+#Update Team and Update Roster (Dev Days)
+#'''
+team_id = 1
+while(team_id < 1009):
+    add_games_for_team(team_id)
+    #updateTeamRoster(team_id)
+    team_id += 1
+#'''
 #run python -m backend.scripts.dataAdder | python -m scripts.dataAdder
+
+

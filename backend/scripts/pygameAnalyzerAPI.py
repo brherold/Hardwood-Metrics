@@ -570,7 +570,7 @@ def gameAnalyzer(gameURL):
 
     return gameData
 
-#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1025626"))
+#print(gameAnalyzer("http://onlinecollegebasketball.org/game/1073073"))
 
 '''
 #Checks if gameAnalyzer works for All games

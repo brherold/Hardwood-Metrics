@@ -261,6 +261,16 @@ class TeamAvg(db.Model):
     _3PAr = db.Column(db.Float)
     FTr = db.Column(db.Float)
 
+    ORtg = db.Column(db.Float)
+    NetRtg = db.Column(db.Float)
+    TO_P = db.Column(db.Float)
+    FT_FG_A = db.Column(db.Float)
+    ORB_P = db.Column(db.Float)
+    DRB_P = db.Column(db.Float)
+
+    SOS = db.Column(db.Float)
+    RPI = db.Column(db.Float)
+
 
 
 

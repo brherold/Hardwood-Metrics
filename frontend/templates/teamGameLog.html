@@ -11,6 +11,7 @@
                 box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional subtle shadow */;
                 
             }
+
     
             h1, h2 {
                 color: #000;
@@ -44,16 +45,28 @@
                 color: #0645AD;
                 text-decoration: underline;
             }
-    
+            
+            /* Horizontal scrolling */
+            .table-container {
+                width: 100%;
+                position: relative;
+                margin: 10px 0;
+                border: 1px solid #a0a0a0;
+            }
+
+            .scroll-container {
+                overflow-x: auto;  /* Enable horizontal scrolling */
+                width: 100%;
+                margin-bottom: 10px;  /* Space below the scroll */
+            }
+
             table {
-                width: auto; /* Let tables size to content */
-                max-width: 100%; /* But don't exceed container */
-                margin: 10px 0; /* Vertical spacing only */
-                border: 1px solid #a0a0a0;  /* Darker gray border */
+                width: 100%;  /* Make the table width 100% of the container */
+                max-width: none; /* Allow the table to be wider than the container */
+                border: 1px solid #a0a0a0;  /* Border for the table */
                 font-family: Verdana, sans-serif;
                 font-size: 11px;
                 border-collapse: collapse;
-                
             }
     
             th, td {
@@ -165,225 +178,231 @@
         <h1><a href="http://onlinecollegebasketball.org/team/{{game_log[0]['team_id']}}" target="_blank">{{game_log[0]["team_name"]}}</a>  Game Log</h1>
         
         <h2> {{season_id}} Games </h2>
-        <table>
-            <thead>
-                <tr>
-                    <th colspan="5"></th>
-                    <th colspan="4">Score</th>
-                    <th colspan="24">Team</th>
-                    <th colspan="24">Opponent</th>
-                </tr>
-                <tr >
-                    <th>Grm</th>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Venue</th>
-                    <th>Opp</th>
-                    <th>Rslt</th>
-                    <th>Tm</th>
-                    <th>Opp</th>
-                    <th>OT</th>
-                    
-                    <th>FG</th>
-                    <th>FGA</th>
-                    <th>eFG%</th>
-                    <th> 3P </th>
-                    <th> 3PA </th>
-                    <th> 3P% </th>
-                    <th> 2P </th>
-                    <th> 2PA </th>
-                    <th> 2P%</th>
-                    <th> FT </th>
-                    <th> FTA </th>
-                    <th> FT%</th>
-                    <th>DIST</th>
-                    <th>PITP</th>
-                    <th> Off</th>
-                    <th> Def </th>
-                    <th> Reb </th>
-                    <th> AST </th>
-                    <th> STL </th>
-                    <th> BLK </th>
-                    <th> TO </th>
-                    <th> PF </th>
-                    <th> FD </th>
-                    <th> FBP </th>
-
-                    <th>FG</th>
-                    <th>FGA</th>
-                    <th>eFG%</th>
-                    <th> 3P </th>
-                    <th> 3PA </th>
-                    <th> 3P% </th>
-                    <th> 2P </th>
-                    <th> 2PA </th>
-                    <th> 2P%</th>
-                    <th> FT </th>
-                    <th> FTA </th>
-                    <th> FT%</th>
-                    <th>DIST</th>
-                    <th>PITP</th>
-                    <th> Off</th>
-                    <th> Def </th>
-                    <th> Reb </th>
-                    <th> AST </th>
-                    <th> STL </th>
-                    <th> BLK </th>
-                    <th> TO </th>
-                    <th> PF </th>
-                    <th> FD </th>
-                    <th> FBP </th>
-
-                </tr>
-            </thead>
-            <tbody>
-            {% for game in game_log %}
-            <thead>
-                {% if game.G_Num % 10 == 0 %}
-                <tr>
-                    <th>Grm</th>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Venue</th>
-                    <th>Opp</th>
-                    <th>Rslt</th>
-                    <th>Tm</th>
-                    <th>Opp</th>
-                    <th>OT</th>
-                    
-                    <th>FG</th>
-                    <th>FGA</th>
-                    <th>eFG%</th>
-                    <th> 3P </th>
-                    <th> 3PA </th>
-                    <th> 3P% </th>
-                    <th> 2P </th>
-                    <th> 2PA </th>
-                    <th> 2P%</th>
-                    <th> FT </th>
-                    <th> FTA </th>
-                    <th> FT%</th>
-                    <th>DIST</th>
-                    <th>PITP</th>
-                    <th> Off</th>
-                    <th> Def </th>
-                    <th> Reb </th>
-                    <th> AST </th>
-                    <th> STL </th>
-                    <th> BLK </th>
-                    <th> TO </th>
-                    <th> PF </th>
-                    <th> FD </th>
-                    <th> FBP </th>
-
-                    <th>FG</th>
-                    <th>FGA</th>
-                    <th>eFG%</th>
-                    <th> 3P </th>
-                    <th> 3PA </th>
-                    <th> 3P% </th>
-                    <th> 2P </th>
-                    <th> 2PA </th>
-                    <th> 2P%</th>
-                    <th> FT </th>
-                    <th> FTA </th>
-                    <th> FT%</th>
-                    <th>DIST</th>
-                    <th>PITP</th>
-                    <th> Off</th>
-                    <th> Def </th>
-                    <th> Reb </th>
-                    <th> AST </th>
-                    <th> STL </th>
-                    <th> BLK </th>
-                    <th> TO </th>
-                    <th> PF </th>
-                    <th> FD </th>
-                    <th> FBP </th>
-
-                </tr>
-                {% else %}
-                {% endif %}
-                
-            </thead>
-                <tr>
-                   <td> {{game.G_Num}}</td>     
-                   <td><a href="http://onlinecollegebasketball.org/game/{{game.game_id}}" target="_blank">{{game.game_date}}</a></td>   
-                   <td>{{game.game_type}}</td>
-                   <td>{{game.team_location}}</td>
-                   <td><a href="http://onlinecollegebasketball.org/team/{{game.opp_id}}" target="_blank">{{game.opp_name}}</a></td>
-                   <td>
-                        {% if game.outcome == 1 %}
-                        W
+        
+        <div class="table-container">
+            <div class="scroll-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="5"></th>
+                            <th colspan="4">Score</th>
+                            <th colspan="24">Team</th>
+                            <th colspan="24">Opponent</th>
+                        </tr>
+                        <tr >
+                            <th>Grm</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Venue</th>
+                            <th>Opp</th>
+                            <th>Rslt</th>
+                            <th>Tm</th>
+                            <th>Opp</th>
+                            <th>OT</th>
+                            
+                            <th>FG</th>
+                            <th>FGA</th>
+                            <th>eFG%</th>
+                            <th> 3P </th>
+                            <th> 3PA </th>
+                            <th> 3P% </th>
+                            <th> 2P </th>
+                            <th> 2PA </th>
+                            <th> 2P%</th>
+                            <th> FT </th>
+                            <th> FTA </th>
+                            <th> FT%</th>
+                            <th>DIST</th>
+                            <th>PITP</th>
+                            <th> Off</th>
+                            <th> Def </th>
+                            <th> Reb </th>
+                            <th> AST </th>
+                            <th> STL </th>
+                            <th> BLK </th>
+                            <th> TO </th>
+                            <th> PF </th>
+                            <th> FD </th>
+                            <th> FBP </th>
+    
+                            <th>FG</th>
+                            <th>FGA</th>
+                            <th>eFG%</th>
+                            <th> 3P </th>
+                            <th> 3PA </th>
+                            <th> 3P% </th>
+                            <th> 2P </th>
+                            <th> 2PA </th>
+                            <th> 2P%</th>
+                            <th> FT </th>
+                            <th> FTA </th>
+                            <th> FT%</th>
+                            <th>DIST</th>
+                            <th>PITP</th>
+                            <th> Off</th>
+                            <th> Def </th>
+                            <th> Reb </th>
+                            <th> AST </th>
+                            <th> STL </th>
+                            <th> BLK </th>
+                            <th> TO </th>
+                            <th> PF </th>
+                            <th> FD </th>
+                            <th> FBP </th>
+    
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for game in game_log %}
+                    <thead>
+                        {% if game.G_Num % 10 == 0 %}
+                        <tr>
+                            <th>Grm</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Venue</th>
+                            <th>Opp</th>
+                            <th>Rslt</th>
+                            <th>Tm</th>
+                            <th>Opp</th>
+                            <th>OT</th>
+                            
+                            <th>FG</th>
+                            <th>FGA</th>
+                            <th>eFG%</th>
+                            <th> 3P </th>
+                            <th> 3PA </th>
+                            <th> 3P% </th>
+                            <th> 2P </th>
+                            <th> 2PA </th>
+                            <th> 2P%</th>
+                            <th> FT </th>
+                            <th> FTA </th>
+                            <th> FT%</th>
+                            <th>DIST</th>
+                            <th>PITP</th>
+                            <th> Off</th>
+                            <th> Def </th>
+                            <th> Reb </th>
+                            <th> AST </th>
+                            <th> STL </th>
+                            <th> BLK </th>
+                            <th> TO </th>
+                            <th> PF </th>
+                            <th> FD </th>
+                            <th> FBP </th>
+    
+                            <th>FG</th>
+                            <th>FGA</th>
+                            <th>eFG%</th>
+                            <th> 3P </th>
+                            <th> 3PA </th>
+                            <th> 3P% </th>
+                            <th> 2P </th>
+                            <th> 2PA </th>
+                            <th> 2P%</th>
+                            <th> FT </th>
+                            <th> FTA </th>
+                            <th> FT%</th>
+                            <th>DIST</th>
+                            <th>PITP</th>
+                            <th> Off</th>
+                            <th> Def </th>
+                            <th> Reb </th>
+                            <th> AST </th>
+                            <th> STL </th>
+                            <th> BLK </th>
+                            <th> TO </th>
+                            <th> PF </th>
+                            <th> FD </th>
+                            <th> FBP </th>
+    
+                        </tr>
                         {% else %}
-                        L
                         {% endif %}
-                  </td>
-                  <td>{{game.PTS}}</td>
-                  <td>{{game.O_PTS|int }}</td>
-                  <td>
-                    {% if game.Min > 200 %}
-                    X
-                    {% else %}
-                    {% endif %}
-                  </td>
-
-                  <td>{{ game.FG_M|round(1) }}</td>
-                  <td>{{ game.FG_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.eFG_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game._3P_M|round(1) }}</td>
-                  <td>{{ game._3P_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game._3P_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game._2P_M|round(1) }}</td>
-                  <td>{{ game._2P_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game._2P_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game.FT_M|round(1) }}</td>
-                  <td>{{ game.FT_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.FT_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{game.DIST}}</td>
-                  <td>{{game.PITP}}</td>
-                  <td>{{ game.Off|round(1) }}</td>
-                  <td>{{ game.Def|round(1) }}</td>
-                  <td>{{ game.Rebs|round(1) }}</td>
-                  <td>{{ game.AST|round(1) }}</td>
-                  <td>{{ game.STL|round(1) }}</td>
-                  <td>{{ game.BLK|round(1) }}</td>
-                  <td>{{ game.TO|round(1) }}</td>
-                  <td>{{ game.PF|round(1) }}</td>
-                  <td>{{ game.FD|round(1) }}</td>
-                  <td>{{ game.FBP|round(1) }}</td>
-                    
-                  <td>{{ game.O_FG_M|round(1) }}</td>
-                  <td>{{ game.O_FG_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.O_eFG_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game.O_3P_M|round(1) }}</td>
-                  <td>{{ game.O_3P_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.O_3P_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game.O_2P_M|round(1) }}</td>
-                  <td>{{ game.O_2P_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.O_2P_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{ game.O_FT_M|round(1) }}</td>
-                  <td>{{ game.O_FT_A|round(1) }}</td>
-                  <td>{{ "%.3f"|format(game.O_FT_P|default(0))|replace("0.",".") }}</td>
-                  <td>{{game.O_DIST}}</td>
-                  <td>{{game.O_PITP}}</td>
-                  <td>{{ game.O_Off|round(1) }}</td>
-                  <td>{{ game.O_Def|round(1) }}</td>
-                  <td>{{ game.O_Rebs|round(1) }}</td>
-                  <td>{{ game.O_AST|round(1) }}</td>
-                  <td>{{ game.O_STL|round(1) }}</td>
-                  <td>{{ game.O_BLK|round(1) }}</td>
-                  <td>{{ game.O_TO|round(1) }}</td>
-                  <td>{{ game.O_PF|round(1) }}</td>
-                  <td>{{ game.O_FD|round(1) }}</td>
-                  <td>{{ game.O_FBP|round(1) }}</td>
-
-
-
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        
+                    </thead>
+                        <tr>
+                        <td> {{game.G_Num}}</td>     
+                        <td><a href="/games/{{game.game_id}}" target="_blank">{{game.game_date}}</a></td>
+                        <td>{{game.game_type}}</td>
+                        <td>{{game.team_location}}</td>
+                        <td><a href="/teams/{{game.opp_id}}/{{season_id}}/College" target="_blank">{{game.opp_name}}</a></td>
+                        <td>
+                                {% if game.outcome == 1 %}
+                                W
+                                {% else %}
+                                L
+                                {% endif %}
+                        </td>
+                        <td>{{game.PTS}}</td>
+                        <td>{{game.O_PTS|int }}</td>
+                        <td>
+                            {% if game.Min > 200 %}
+                            X
+                            {% else %}
+                            {% endif %}
+                        </td>
+    
+                        <td>{{ game.FG_M|round(1) }}</td>
+                        <td>{{ game.FG_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.eFG_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game._3P_M|round(1) }}</td>
+                        <td>{{ game._3P_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game._3P_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game._2P_M|round(1) }}</td>
+                        <td>{{ game._2P_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game._2P_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game.FT_M|round(1) }}</td>
+                        <td>{{ game.FT_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.FT_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{game.DIST}}</td>
+                        <td>{{game.PITP}}</td>
+                        <td>{{ game.Off|round(1) }}</td>
+                        <td>{{ game.Def|round(1) }}</td>
+                        <td>{{ game.Rebs|round(1) }}</td>
+                        <td>{{ game.AST|round(1) }}</td>
+                        <td>{{ game.STL|round(1) }}</td>
+                        <td>{{ game.BLK|round(1) }}</td>
+                        <td>{{ game.TO|round(1) }}</td>
+                        <td>{{ game.PF|round(1) }}</td>
+                        <td>{{ game.FD|round(1) }}</td>
+                        <td>{{ game.FBP|round(1) }}</td>
+                            
+                        <td>{{ game.O_FG_M|round(1) }}</td>
+                        <td>{{ game.O_FG_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.O_eFG_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game.O_3P_M|round(1) }}</td>
+                        <td>{{ game.O_3P_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.O_3P_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game.O_2P_M|round(1) }}</td>
+                        <td>{{ game.O_2P_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.O_2P_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{ game.O_FT_M|round(1) }}</td>
+                        <td>{{ game.O_FT_A|round(1) }}</td>
+                        <td>{{ "%.3f"|format(game.O_FT_P|default(0))|replace("0.",".") }}</td>
+                        <td>{{game.O_DIST}}</td>
+                        <td>{{game.O_PITP}}</td>
+                        <td>{{ game.O_Off|round(1) }}</td>
+                        <td>{{ game.O_Def|round(1) }}</td>
+                        <td>{{ game.O_Rebs|round(1) }}</td>
+                        <td>{{ game.O_AST|round(1) }}</td>
+                        <td>{{ game.O_STL|round(1) }}</td>
+                        <td>{{ game.O_BLK|round(1) }}</td>
+                        <td>{{ game.O_TO|round(1) }}</td>
+                        <td>{{ game.O_PF|round(1) }}</td>
+                        <td>{{ game.O_FD|round(1) }}</td>
+                        <td>{{ game.O_FBP|round(1) }}</td>
+    
+    
+    
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
 
 
 

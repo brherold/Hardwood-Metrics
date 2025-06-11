@@ -7,4 +7,7 @@ WHERE pavg.game_type = 'College'
   AND pavg.GP >= 20 
   AND pavg.Min >= 10
   AND PG_Min >= 0.75 * Min
+
+
+  
   

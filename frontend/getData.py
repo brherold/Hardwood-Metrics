@@ -1,5 +1,25 @@
 import sqlite3
 import json
+from collections import defaultdict
+
+#Converts conference_number to conference_name
+def get_conference_name(conference_number):
+    if 1 <= conference_number <= 63:
+        if conference_number == 1:
+            return "I.1"
+        elif 2 <= conference_number <= 3:
+            return f"II.{conference_number - 1}"
+        elif 4 <= conference_number <= 7:
+            return f"III.{conference_number - 3}"
+        elif 8 <= conference_number <= 15:
+            return f"IV.{conference_number - 7}"
+        elif 16 <= conference_number <= 31:
+            return f"V.{conference_number - 15}"
+        elif 32 <= conference_number <= 63:
+            return f"VI.{conference_number - 31}"
+    else:
+        return "Invalid conference number"
+
 
 def get_connection():
     conn = sqlite3.connect('instance/basketball.db', check_same_thread=False)
@@ -29,6 +49,61 @@ def getRoster(team_id, season_id):
 
     return clean_data(rows)
 
+#Gets Avgs or Every team in given conference and year
+def getConferenceAvg(conference_id,season_id):
+    conn, cursor = get_connection()
+    with open('referenceQueries/conferenceStats.sql', 'r') as file:
+        sql_query = file.read()
+
+    cursor.execute(sql_query, (conference_id, season_id,))
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    team_stats = clean_data(rows)
+    #Apply for every team in conference
+    for i, team_stat in enumerate(team_stats):
+        if i == 0:
+            most_wins = team_stat["GW"]
+            team_stat["GB"] = "-"
+        if i != 0:
+            team_stat["GB"] = most_wins - team_stat["GW"] if team_stat["GW"] != most_wins else "-"
+        # Adding % of Fg by Shot Type in dic
+        
+        team_stat["_2PAr"] = team_stat["_2P_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["FAr"] = team_stat["F_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["ISAr"] = team_stat["IS_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["MRAr"] = team_stat["MR_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+    
+    
+    return team_stats
+
+#Gets Avgs of Every Opponent team in given conference and year
+def getConferenceOppAvg(conference_id,season_id):
+    conn, cursor = get_connection()
+    with open('referenceQueries/conferenceOppStats.sql', 'r') as file:
+        sql_query = file.read()
+
+    cursor.execute(sql_query, (conference_id, season_id,))
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    team_stats = clean_data(rows)
+    #Apply for every team in conference
+    for team_stat in team_stats:
+        # Adding % of Fg by Shot Type in dic
+        
+        team_stat["_2PAr"] = team_stat["_2P_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["FAr"] = team_stat["F_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["ISAr"] = team_stat["IS_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+        team_stat["MRAr"] = team_stat["MR_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+    
+    
+    return team_stats
+
+
+
 def getTeamAvg(team_id, season_id, game_type):
     conn, cursor = get_connection()
     with open('referenceQueries/teamAvg.sql', 'r') as file:
@@ -42,9 +117,6 @@ def getTeamAvg(team_id, season_id, game_type):
 
     conn.close()
 
-
-
-
     team_stat = clean_data(rows)[0]
     # Adding % of Fg by Shot Type in dic
     
@@ -52,6 +124,10 @@ def getTeamAvg(team_id, season_id, game_type):
     team_stat["FAr"] = team_stat["F_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
     team_stat["ISAr"] = team_stat["IS_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
     team_stat["MRAr"] = team_stat["MR_A"] / team_stat["FG_A"] if team_stat["FG_A"] != 0 else 0
+
+    #Conference ID -> Conference Name (1 _> I.1)
+    team_stat["conference_name"] = get_conference_name(team_stat["conference_id"])
+
         
     
 
@@ -83,7 +159,19 @@ def getOppAvg(team_id, season_id, game_type):
     #return clean_data(rows)[0]
     return team_stat
 
+#Gets game info (teams, Date, etc)
+def gameInfo(game_id):
+    conn, cursor = get_connection()
+    with open('referenceQueries/gameInfo.sql', 'r') as file:
+        sql_query = file.read()
 
+    cursor.execute(sql_query, (game_id,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    return clean_data(rows)[0]
+
+#print(gameInfo(1058757))
 
 def getTeamGameLogs(team_id, season_id):
     conn, cursor = get_connection()
@@ -291,8 +379,111 @@ def getTeamGameLog(team_id, season_id):
 
 #print(getTeamGameLog(533,2045))
 
+#Gets the Box Score stats of all players from a game
+def gamePlayerStats(away_team_id, game_id):
+    conn, cursor = get_connection()
+
+    with open('referenceQueries/gamePlayerStats.sql', 'r') as file:
+        sql_query = file.read()
 
 
+    cursor.execute(sql_query, (game_id,))
+    rows = cursor.fetchall()
+
+    rows = clean_data(rows)
+
+    awayTeam = []
+    homeTeam = []
+
+    if not rows:
+        return awayTeam, homeTeam
+
+    '''
+    # Identify the away team name from the first player's team
+    first_team = rows[0]["team_name"]
+
+    for player in rows:
+        team = player["team_name"]
+
+        if team == first_team:
+            awayTeam.append(player)
+        else:
+            homeTeam.append(player)
+    '''
+    for player in rows:
+        team_id = player["team_id"]
+        if team_id == away_team_id:
+            awayTeam.append(player)
+        else:
+            homeTeam.append(player)
+
+    conn.close()
+
+    return awayTeam, homeTeam
+
+#print(gamePlayerStats(1058757)[1][0])
+
+#Gets the Box Score stats of all teams from a game
+def gameTeamStats(away_team_id, game_id):
+    conn, cursor = get_connection()
+
+    with open('referenceQueries/gameTeamStats.sql', 'r') as file:
+        sql_query = file.read()
+
+
+    cursor.execute(sql_query, (game_id,))
+    rows = cursor.fetchall()
+
+    rows = clean_data(rows)
+
+    for team_stats in rows:
+        if team_stats["team_id"] == away_team_id:
+            awayTeam = team_stats
+        else:
+            homeTeam = team_stats
+
+
+    conn.close()
+
+    return awayTeam, homeTeam
+#print(gameTeamStats(1058757))
+
+#Get Defense Stats from specific game and Team
+def gameTeamDefense(team_id,game_id):
+    conn, cursor = get_connection()
+
+
+    with open('referenceQueries/gameTeamDefense.sql', 'r') as file:
+        sql_query = file.read()
+
+    cursor.execute(sql_query, (team_id, game_id, team_id, game_id,))
+
+    rows = cursor.fetchall()
+    
+    conn.close()
+    rows = clean_data(rows)
+
+
+    #Renaming Defense Types
+    for def_type in rows:
+        if def_type["defense_type"] == "half":
+            def_type["defense_type"] = "half-court"
+        elif def_type["defense_type"] == "m_ext":
+            def_type["defense_type"] = "man-to-man extended"
+        elif def_type["defense_type"] == "m_pck":
+            def_type["defense_type"] = "man-to-man packed"        
+        elif def_type["defense_type"] == "man":
+            def_type["defense_type"] = "man-to-man"
+        elif def_type["defense_type"] == "z_ext":
+            def_type["defense_type"] = "zone extended"
+        elif def_type["defense_type"] == "z_pck":
+            def_type["defense_type"] = "zone packed"
+     
+
+
+    return clean_data(rows)
+
+#print(gameTeamDefense(533,1058757))
 '''
 print()
 player_stats = getTeamPlayerAvg(935, "Conference", 2044)

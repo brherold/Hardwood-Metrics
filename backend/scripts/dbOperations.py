@@ -16,7 +16,13 @@ current_season = find_current_season()
 #current_season = 2044
 
 
-sos_dic = sos_holder()
+team_sos_rpi = sos_holder()
+#Adjust BPM (EPM ) formula is .75*(20*SOS - 10) + .25*BPM 
+#20*SOS - 10 -> Scales SOS values similarly to BPM/EPM
+
+#^
+def APM_scaler(sos):
+    return .75*(20*sos - 10)
 
 def id_to_url(id):
     '''
@@ -218,123 +224,8 @@ def update_player_helper(player_id):
     new_player = get_or_add_player(player_id)
 
     return new_player
-'''
-def team_data_to_playerDB(team_data):
 
-    #Adds team_data from team_roster_info(teamURL) to player and playerSkills table
-    #Updates player skills
 
-    teamID = team_data["teamID"]
-    for player in team_data["players"]:
-        player_name = player["name"]
-        player_id = player["playerID"]
-
-        existing_player = Player.query.filter_by(player_id=player_id).first()
-
-        if existing_player:
-            # Update existing player skills
-            existing_player_skills = PlayerSkills.query.filter_by(player_id=player_id, season_id=current_season).first()
-            if existing_player_skills:
-                # Update existing player skills
-                existing_player_skills.Pos = player["Pos"]
-                existing_player_skills.Class = player["Class"]
-                existing_player_skills.height = player["Height"]
-                existing_player_skills.weight = player["Weight"]
-                existing_player_skills.wingspan = player["Wingspan"]
-                existing_player_skills.vertical = player["Vertical"]
-                existing_player_skills.IS = player["IS"]
-                existing_player_skills.IQ = player["IQ"]
-                existing_player_skills.OS = player["OS"]
-                existing_player_skills.Pass = player["Pass"]
-                existing_player_skills.Rng = player["Rng"]
-                existing_player_skills.Hnd = player["Hnd"]
-                existing_player_skills.Fin = player["Fin"]
-                existing_player_skills.Drv = player["Drv"]
-                existing_player_skills.Reb = player["Reb"]
-                existing_player_skills.Str = player["Str"]
-                existing_player_skills.IDef = player["IDef"]
-                existing_player_skills.Spd = player["Spd"]
-                existing_player_skills.PDef = player["PDef"]
-                existing_player_skills.Sta = player["Sta"]
-                existing_player_skills.SI = player["SI"]
-                existing_player_skills.POT = player["POT"]
-                existing_player_skills.Stars = player["Stars"]
-
-                db.session.commit()  
-                return existing_player_skills, "Player skills updated successfully"
-                
-            else:
-                # If no existing skills for player in current season, add new skills to the table
-                new_player_skills = PlayerSkills(
-                player_id = player_id,
-                season_id = current_season,
-                Pos = player["Pos"],
-                Class = player["Class"],
-                height = player["Height"],
-                weight=player["Weight"],
-                wingspan=player["Wingspan"],
-                vertical=player["Vertical"],
-                IS=player["IS"],
-                IQ=player["IQ"],
-                OS=player["OS"],
-                Pass=player["Pass"],
-                Rng=player["Rng"],
-                Hnd=player["Hnd"],
-                Fin=player["Fin"],
-                Drv=player["Drv"],
-                Reb=player["Reb"],
-                Str=player["Str"],
-                IDef=player["IDef"],
-                Spd=player["Spd"],
-                PDef=player["PDef"],
-                Sta=player["Sta"],
-                SI = player["SI"],
-                POT = player["POT"],
-                Stars = player["Stars"]
-                )
-
-                db.session.add(new_player_skills)  # Add the new player skills to the session
-                db.session.commit()  
-            return 
-
-        new_player = Player(
-        player_id=player_id,
-        team_id=teamID,
-        name = player_name
-    )
-        db.session.add(new_player)  # Add the new player skills to the session
-        
-        new_player_skills = PlayerSkills(
-                player_id = player_id,
-                season_id = current_season,
-                Pos = player["Pos"],
-                Class = player["Class"],
-                height = player["Height"],
-                weight=player["Weight"],
-                wingspan=player["Wingspan"],
-                vertical=player["Vertical"],
-                IS=player["IS"],
-                IQ=player["IQ"],
-                OS=player["OS"],
-                Pass=player["Pass"],
-                Rng=player["Rng"],
-                Hnd=player["Hnd"],
-                Fin=player["Fin"],
-                Drv=player["Drv"],
-                Reb=player["Reb"],
-                Str=player["Str"],
-                IDef=player["IDef"],
-                Spd=player["Spd"],
-                PDef=player["PDef"],
-                Sta=player["Sta"],
-                SI = player["SI"],
-                POT = player["POT"],
-                Stars = player["Stars"]
-                )
-        db.session.add(new_player_skills)  # Add the new player skills to the session
-        db.session.commit()
-    return 
-'''
 def team_data_to_playerDB(team_data):
     """
     Adds new players from team_data to the Player and PlayerSkills tables.
@@ -405,6 +296,9 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
 
 
     if team_avg:
+
+        #Get opponent avg stats
+        opp_avg = db.session.query(TeamAvg).filter_by(team_id = team_id,season_id = season_id,game_type=game_type,stat_type = "opponent").first()
         
         #Accumalate avg
         
@@ -473,7 +367,6 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
 
 
         if stat_type != "opponent":
-            opp_avg = db.session.query(TeamAvg).filter_by(team_id = team_id,season_id = season_id,game_type=game_type,stat_type = "opponent").first()
             #Prep for BPM Training 
             
             # Format: [Poss,Pts,FGA,FTA,Off,AST,TO,FD]
@@ -492,20 +385,57 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             team_avg.DBPM = bpm_values[1]
             team_avg.BPM =  bpm_values[2]
 
+
+
+            team_sos = team_sos_rpi[team_id][0]
+            team_avg.SOS = team_sos
+            team_avg.RPI = team_sos_rpi[team_id][1]
+
+
+
             #For Calculating Adjusted BPM (uses SOS)
             if game_type == "College":
                 
-                team_sos = sos_dic[team_id]
+                '''
                 team_avg.AOBPM = round(.75 * team_avg.OBPM + 25 * (team_sos - .5), 1)
                 team_avg.ADBPM = round(.75 * team_avg.DBPM + 25 * (team_sos - .5), 1)
-                team_avg.ABPM =  team_avg.AOBPM + team_avg.ADBPM 
+                team_avg.ABPM =  team_avg.AOBPM + team_avg.ADBPM
+                '''
+                team_avg.AOBPM = round(.25 * team_avg.OBPM + APM_scaler(team_sos), 1)
+                team_avg.ADBPM = round(.25 * team_avg.DBPM + APM_scaler(team_sos), 1)
+                team_avg.ABPM =  team_avg.AOBPM + team_avg.ADBPM                
+            
+            
+            #Only calculate ORB% and DRB% for stat_type == "team"
+            #Query to get opponent rebound stats to calculate 
+            
+
+            denom = (team_avg.Off + opp_avg.Def)
+            team_avg.ORB_P = round(100 *team_avg.Off / (denom),1) if denom != 0 else 0
+
+            denom = (team_avg.Def + opp_avg.Off)
+            team_avg.DRB_P = round(100 *team_avg.Def / (denom),1) if denom != 0 else 0
 
         #Advanced Statistics
         team_avg.TS = round((team_avg.PTS) / (2 * (team_avg.FG_A + 0.44 * team_avg.FT_A)), 3) if (team_avg.FG_A + 0.44 * team_avg.FT_A) != 0 else 0
 
         team_avg._3PAr = round(team_avg._3P_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
 
+        
         team_avg.FTr = round(team_avg.FT_A / team_avg.FG_A, 3) if team_avg.FG_A != 0 else 0
+
+        team_avg.ORtg = round(100*(team_avg.PTS / team_avg.Poss),1)
+
+        team_avg.NetRtg = round(team_avg.ORtg - opp_avg.ORtg,1) if stat_type != "opponent" else None
+
+
+        denom = team_avg.FG_A + 0.44 * team_avg.FT_A + team_avg.TO
+        team_avg.TO_P = round(100 * team_avg.TO / denom, 1) if denom != 0 else 0
+
+        team_avg.FT_FG_A = round(team_avg.FT_M / team_avg.FG_A,3)
+
+
+
             
         team_avg.GP = new_games_played #Last because Needed to calculate Avg for Stats Before
             
@@ -580,6 +510,7 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             FT_P = fg_percentage(team_stats["FT"][0],team_stats["FT"][1]),
             
             Off = team_stats["Off"],
+            Def = team_stats["Reb"] - team_stats["Off"],
             Rebs = team_stats["Reb"],
             AST = team_stats["AST"],
             STL = team_stats["STL"],
@@ -597,10 +528,12 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             OBPM = bpm_values[0] if bpm_values else None, 
             DBPM = bpm_values[1] if bpm_values else None, 
             BPM =  bpm_values[2] if bpm_values else None,
+                                                                
+            AOBPM = round(.25 * bpm_values[0] + APM_scaler(team_sos_rpi[team_id][0]), 1) if bpm_values and game_type == "College" else None, 
+            ADBPM = round(.25 * bpm_values[1] + APM_scaler(team_sos_rpi[team_id][0]), 1) if bpm_values and game_type == "College" else None, 
+            ABPM =  round(.25 * bpm_values[0] + APM_scaler(team_sos_rpi[team_id][0]), 1)  + round(.25 * bpm_values[1] + APM_scaler(team_sos_rpi[team_id][0]), 1) if bpm_values and game_type == "College" else None,
 
-            AOBPM = round(.75 * bpm_values[0] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None, 
-            ADBPM = round(.75 * bpm_values[1] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None, 
-            ABPM =  round(.75 * bpm_values[0] + 25 * (sos_dic[team_id] - .5), 1)  + round(.75 * bpm_values[1] + 25 * (sos_dic[team_id] - .5), 1) if bpm_values and game_type == "College" else None,
+
 
             #Advanced Statistics
             TS = round((team_stats["PTS"]) / (2 * (team_stats["FG"][1] + 0.44 * team_stats["FT"][1])), 3) \
@@ -609,6 +542,36 @@ def update_team_avg(team_id,season_id,game_type,stat_type,team_outcome,team_shot
             _3PAr = round(team_shots["3-Pointer"][1] / team_stats["FG"][1], 3) if team_stats["FG"][1] != 0 else 0,
 
             FTr = round(team_stats["FT"][1] / team_stats["FG"][1], 3) if team_stats["FG"][1] != 0 else 0,
+
+            ORtg = round(100 * (team_stats["PTS"] / team_stats["Poss"]), 1),
+
+            NetRtg = (
+                None if stat_type == "opponent"
+                else round((100 * ((team_stats["PTS"]/team_stats["Poss"]) - (opponent_stats["PTS"]/opponent_stats["Poss"]))),1)
+            ),
+            
+
+            TO_P = round(100 * team_stats["TO"] / 
+                (team_stats["FG"][1] + 0.44 * team_stats["FT"][1] + team_stats["TO"]), 1) \
+                if (team_stats["FG"][1] + 0.44 * team_stats["FT"][1] + team_stats["TO"]) != 0 else 0,
+            
+            FT_FG_A = round(team_stats["FT"][0] / team_stats["FG"][1],3),
+
+            ORB_P = (
+                None if stat_type == "opponent"
+                else round(100 * team_stats["Off"] / (team_stats["Off"] + (opponent_stats["Reb"] - opponent_stats["Off"])), 1)
+                if (team_stats["Off"] + (opponent_stats["Reb"] - opponent_stats["Off"])) != 0
+                else 0
+            ),
+            DRB_P = (
+                None if stat_type == "opponent"
+                else round(100 * (team_stats["Reb"] - team_stats["Off"]) / ((team_stats["Reb"] - team_stats["Off"]) + opponent_stats["Off"]), 1)
+                if ((team_stats["Reb"] - team_stats["Off"]) + opponent_stats["Off"]) != 0
+                else 0
+            ) ,
+
+            SOS = team_sos_rpi[team_id][0] if stat_type == "team" else None,
+            RPI = team_sos_rpi[team_id][1] if stat_type == "team" else None,
         )
         db.session.add(team_avg)
     db.session.commit()
@@ -1261,9 +1224,9 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         if game_type == "College":
             team_id_of_player = str(team_id_of_player)
     
-            team_sos = sos_dic[team_id_of_player]
-            player_avg.AOBPM = round(.75 * player_avg.OBPM + 25 * (team_sos - .5), 1)
-            player_avg.ADBPM = round(.75 * player_avg.DBPM + 25 * (team_sos - .5), 1)
+            team_sos = team_sos_rpi[team_id_of_player][0]
+            player_avg.AOBPM = round(.25 * player_avg.OBPM + APM_scaler(team_sos), 1)
+            player_avg.ADBPM = round(.25 * player_avg.DBPM + APM_scaler(team_sos), 1)
             player_avg.ABPM =  player_avg.AOBPM + player_avg.ADBPM         
         
         #Advanced Statistics
@@ -1358,7 +1321,7 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
 
         if game_type == "College":
             team_id_of_player = str(team_id_of_player)
-            team_sos = sos_dic[team_id_of_player]
+            team_sos = team_sos_rpi[team_id_of_player][0]
             
         
     #First game for player
@@ -1459,9 +1422,9 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
             BPM =  bpm_values[2],
 
             
-            AOBPM = round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None, 
-            ADBPM = round(.75 * bpm_values[1] + 25 * (team_sos- .5), 1) if bpm_values and game_type == "College" else None, 
-            ABPM =  round(.75 * bpm_values[0] + 25 * (team_sos - .5), 1)  + round(.75 * bpm_values[1] + 25 * (team_sos - .5), 1) if bpm_values and game_type == "College" else None,  
+            AOBPM = round(.25 * bpm_values[0] + APM_scaler(team_sos), 1) if bpm_values and game_type == "College" else None, 
+            ADBPM = round(.25 * bpm_values[1] + APM_scaler(team_sos), 1) if bpm_values and game_type == "College" else None, 
+            ABPM =  round(.25 * bpm_values[0] + APM_scaler(team_sos), 1)  + round(.25 * bpm_values[1] + APM_scaler(team_sos), 1) if bpm_values and game_type == "College" else None,  
 
             OEPM = epm_values[0],
             DEPM = epm_values[1],
@@ -1591,13 +1554,16 @@ def add_game_helper(game_id):
     EXCLUDED_AVG_GAME_TYPES = {"Non-Conference","Exhibition", "Invitational"}
     
     if game_type not in EXCLUDED_AVG_GAME_TYPES:
-        #Updates Team Avg
-        update_team_avg(homeTeamID,season_id,game_data["gameType"],"team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,game_data["gameType"],"team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
 
         #Updates Opponent Team Avg
         update_team_avg(homeTeamID,season_id,game_data["gameType"],"opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],home_team_conference_id)
         update_team_avg(awayTeamID,season_id,game_data["gameType"],"opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],away_team_conference_id)
+        
+        #Updates Team Avg
+        update_team_avg(homeTeamID,season_id,game_data["gameType"],"team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,game_data["gameType"],"team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
+
+
     
         #all_players is only iterated if it has values
         for player in all_players:
@@ -1613,13 +1579,16 @@ def add_game_helper(game_id):
     
 
     if game_type not in EXCLUDED_GAME_TYPES:
-        #Updates Team Avg
-        update_team_avg(homeTeamID,season_id,"College","team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
-        update_team_avg(awayTeamID,season_id,"College","team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
 
         #Updates Opponent Team Avg
         update_team_avg(homeTeamID,season_id,"College","opponent",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],home_team_conference_id)
         update_team_avg(awayTeamID,season_id,"College","opponent",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],away_team_conference_id)
+
+        #Updates Team Avg
+        update_team_avg(homeTeamID,season_id,"College","team",home_team_outcome,game_data["homeTeam"]["totalShots"], game_data["homeTeam"]["stats"], game_data["awayTeam"]["stats"],home_team_conference_id)
+        update_team_avg(awayTeamID,season_id,"College","team",away_team_outcome,game_data["awayTeam"]["totalShots"], game_data["awayTeam"]["stats"], game_data["homeTeam"]["stats"],away_team_conference_id)
+
+
 
         #Update Stats for All players aswell  
         for player in all_players:
