@@ -7,4 +7,4 @@ LEFT JOIN players_skills psk
 WHERE pavg.game_type = 'College' 
   AND pavg.GP >= 20 
   AND pavg.Min >= 15
-  AND psk.season_id = 2044
+  AND psk.season_id = 2045

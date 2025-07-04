@@ -3,8 +3,8 @@ import joblib
 import warnings
 warnings.filterwarnings("ignore", message="X does not have valid feature names.*")
 
-
-#Have the models folder and you dont it saves the models 
+#FOR BPM (EPM iN WEBAPP)
+#Have the models folder and you save the models 
 
 def predict_bpm(pos, Poss, O_Poss, off_values, def_values):
     # Load models based on position
@@ -94,7 +94,7 @@ def predict_bpm(pos, Poss, O_Poss, off_values, def_values):
 
 '''
 # Example usage
-pos = "SG"
+pos = "C"
 Poss = 60
 O_Poss = 50
 #off_values = [PTS, FGA, FTA, Off, AST, TO, FD]

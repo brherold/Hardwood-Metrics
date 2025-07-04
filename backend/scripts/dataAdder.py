@@ -152,10 +152,10 @@ while(team_id < 1009):
 '''
 #Update Team and Update Roster (Dev Days)
 #'''
-team_id = 1
+team_id = 653
 while(team_id < 1009):
     add_games_for_team(team_id)
-    #updateTeamRoster(team_id)
+    updateTeamRoster(team_id)
     team_id += 1
 #'''
 #run python -m backend.scripts.dataAdder | python -m scripts.dataAdder

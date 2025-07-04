@@ -19,10 +19,10 @@ JOIN player_avg pavg ON pavg.player_id = p.player_id
 JOIN teams t on t.team_id = p.team_id
 JOIN team_avg tavg on tavg.team_id = t.team_id
 WHERE pavg.game_type = 'Conference'
-  AND pavg.season_id = 2045
-  AND pavg.GP >= 20 
+  AND pavg.season_id = 2046
+  AND pavg.GP >= 5 
   AND pavg.Min >= 20
-  and tavg.conference_id = 4
+  and tavg.conference_id = 2
   and tavg.season_id = pavg.season_id
  
 ORDER BY pavg.BPM DESC;

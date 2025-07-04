@@ -729,9 +729,9 @@
                     <td>{{ "%.1f"|format(player.BLK_P|default(0)) if player.BLK_P >= 1 else "%.1f"|format(player.BLK_P|default(0))}}</td>
                     <td>{{ "%.1f"|format(player.TO_P|default(0)) if player.TO_P >= 1 else "%.1f"|format(player.TO_P|default(0))}}</td>
                     <td>{{ "%.1f"|format(player.USG_P|default(0)) if player.USG_P >= 1 else "%.1f"|format(player.USG_P|default(0))}}</td>
-                    <td>{{ "%.1f"|format(player.OBPM|round(1)) }}</td>
-                    <td>{{ "%.1f"|format(player.DBPM|round(1)) }}</td>
-                    <td>{{ "%.1f"|format(player.BPM|round(1)) }}</td>
+                    <td>{{ "%.1f"|format(player.OEPM|round(1)) }}</td>
+                    <td>{{ "%.1f"|format(player.DEPM|round(1)) }}</td>
+                    <td>{{ "%.1f"|format(player.EPM|round(1)) }}</td>
                     <td>{{ "%.1f"|format(player.VORP|round(1)) }}</td>
 
                     

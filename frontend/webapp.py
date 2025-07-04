@@ -16,7 +16,7 @@ def home():
         else:
                 
             team_id = request.form["code"]
-            season_id = 2045
+            season_id = 2046
             return redirect(url_for('teamStats', code=team_id, season_year=season_id))
     
     return render_template('home.html')
@@ -44,8 +44,8 @@ def teamStats(code, season_year, game_type):
 
     for player in team_player_avg:
         denom = team_avg["GP"] * 40
-        player["VORP"] = ((player["BPM"] + 2) * player["Min"] * (player["GP"]))/denom
-        player["WAR"] = player["VORP"] * .1205 * team_avg["GP"] / 5
+        player["VORP"] = ((player["EPM"] + 3) * player["Min"] * (player["GP"]))/denom
+        #player["WAR"] = player["VORP"] * .1205 * team_avg["GP"] / 5
 
 
 
@@ -106,4 +106,4 @@ def playerStats(code):
     pass
 
 if __name__ == '__main__':
-    app.run(port=3000, debug=True)
+    app.run(port=7000, debug=True)

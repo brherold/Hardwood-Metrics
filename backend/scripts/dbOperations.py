@@ -880,12 +880,13 @@ def create_player_stats(player_id,game_id,player_position,player_shots,player_de
 
     bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)#predict_bpm(player_position,off_values,def_values)
     
-    #EPM 
-                    #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
-    off_values_epm = [player_stats["PTS"], player_stats["FG"][1], player_stats["FT"][1], player_stats["3P"][0],player_stats["Off"]
-                      ,player_stats["Reb"] -  player_stats["Off"],player_stats["AST"],player_stats["STL"], player_stats["BLK"], player_stats["TO"], player_stats["PF"], player_stats["FD"]]
-                    #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
-    def_values_epm  = [player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],player_stats["TO"],player_stats["PF"], player_stats["OFG"][1], player_stats["OPTS"]]
+    #EPM+
+                    #['FG_A','_2P_M','_3P_M','FT_M','AST','TO','Off']
+    off_values_epm = [player_stats["FG"][1],player_stats["FG"][0] - player_stats["3P"][0],player_stats["3P"][0], player_stats["FT"][0], 
+                        player_stats["AST"], player_stats["TO"], player_stats["Off"]]
+                    #['O_FG_A','O_2P_M','O_3P_M','STL','PF','Def']
+    def_values_epm  = [player_stats["OFG"][1],  player_stats["OFG"][0] - player_stats["O3P"][0] 
+                       ,player_stats["O3P"][0], player_stats["STL"],player_stats["PF"], player_stats["Reb"] -  player_stats["Off"]]
 
     epm_values = predict_epm(player_position,Poss, O_Poss, off_values_epm,def_values_epm)
 
@@ -1204,13 +1205,14 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         player_avg.BPM = bpm_values[2]
         
         #EPM 
-                        #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
-        off_values_epm = [player_avg.PTS, player_avg.FG_A, player_avg.FT_A, player_avg._3P_M, player_avg.Off, player_avg.Def, player_avg.AST, 
-                          player_avg.STL, player_avg.BLK, player_avg.TO, player_avg.PF, player_avg.FD]
-                        #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
-        def_values_epm  = [player_avg.Def, player_avg.STL, player_avg.TO,player_avg.PF,player_avg.O_FG_A,player_avg.O_PTS]
+                        #['FG_A','_2P_M','_3P_M','FT_M','AST','TO','Off']
+        off_values_epm = [player_avg.FG_A, player_avg._2P_M, player_avg._3P_M, player_avg.FT_M,
+                         player_avg.AST, player_avg.TO, player_avg.Off]
+              
+                        #['O_FG_A','O_2P_M','O_3P_M','STL','PF','Def']
+        def_values_epm  = [player_avg.O_FG_A, player_avg.O_2P_M, player_avg.O_3P_M, player_avg.STL, player_avg.PF, player_avg.Def]
+                        
 
-        
         epm_values = predict_epm(player_postion_played_most if player_postion_played_most else player_position,Poss, O_Poss, off_values_epm,def_values_epm)
 
         player_avg.OEPM = epm_values[0]
@@ -1308,11 +1310,12 @@ def update_player_avg(player_id,season_id,game_type,player_position,player_shots
         bpm_values = predict_bpm(player_position,Poss,O_Poss,off_values,def_values)
 
         #EPM Training
-                    #['PTS',  'FG_A', 'FT_A', '_3P_M', 'Off', 'Def', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FD' ]
-        off_values_epm = [player_stats["PTS"], player_stats["FG"][1], player_stats["FT"][1], player_stats["3P"][0],player_stats["Off"]
-                        ,player_stats["Reb"] -  player_stats["Off"],player_stats["AST"],player_stats["STL"], player_stats["BLK"], player_stats["TO"], player_stats["PF"], player_stats["FD"]]
-                        #['Def', 'STL', 'TO', 'PF', 'O_FG_A', 'O_PTS']
-        def_values_epm  = [player_stats["Reb"] -  player_stats["Off"], player_stats["STL"],player_stats["TO"],player_stats["PF"], player_stats["OFG"][1], player_stats["OPTS"]]
+                #['FG_A','_2P_M','_3P_M','FT_M','AST','TO','Off']
+        off_values_epm = [player_stats["FG"][1],player_stats["FG"][0] - player_stats["3P"][0],player_stats["3P"][0], player_stats["FT"][0], 
+                            player_stats["AST"], player_stats["TO"], player_stats["Off"]]
+                        #['O_FG_A','O_2P_M','O_3P_M','STL','PF','Def']
+        def_values_epm  = [player_stats["OFG"][1],  player_stats["OFG"][0] - player_stats["O3P"][0] 
+                            ,player_stats["O3P"][0], player_stats["STL"],player_stats["PF"], player_stats["Reb"] -  player_stats["Off"]]
 
         epm_values = predict_epm(player_position,Poss, O_Poss, off_values_epm,def_values_epm)
 
