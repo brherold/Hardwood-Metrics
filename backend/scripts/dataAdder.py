@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 #from .helperFunctions import *
 import os
 
+current_season = 2046
+
+post_season = False #If playoffs + are occurring make this True (means have to reOpen TeamsHTML pages for every team (new games ))
     
 #Caching Team Schedule (TeamsHTML) for Year
 def save_html_to_file(content, filename):
@@ -24,7 +27,6 @@ def delete_file(filename):
         print(f"{filename} does not exist.")
 
 
-#run python -m backend.scripts.dataAdder | python -m scripts.dataAdder
 
 def id_to_url(id):
     '''
@@ -43,21 +45,31 @@ def team_games_played(team_id):
 
     cache_folder = "backend/TeamsHTML"
     
-    cache_filename = os.path.join(cache_folder, f"{team_id}-{2044}.html")
+    cache_filename = os.path.join(cache_folder, f"{team_id}-{current_season}.html")
     
-    
-    try:
-        # Try to load HTML content from the local cache
-        page = load_html_from_file(cache_filename)
-        
-        
-    except FileNotFoundError:
-        # If not found, fetch the content from the URL
+    #If in exhibition/non-conf/conf games currently
+    if post_season == False:
+        try:
+            # Try to load HTML content from the local cache
+            page = load_html_from_file(cache_filename)
+            
+            
+        except FileNotFoundError:
+            # If not found, fetch the content from the URL
+            page = requests.get(teamScheduleUrl)
+
+            # Save HTML content to the local cache
+            save_html_to_file(page.text, cache_filename)
+            page = page.text 
+
+    #If playoffs + games started 
+    else:
         page = requests.get(teamScheduleUrl)
 
         # Save HTML content to the local cache
         save_html_to_file(page.text, cache_filename)
         page = page.text 
+
 
 
     soup = BeautifulSoup(page, "html.parser")
@@ -80,6 +92,7 @@ def team_games_played(team_id):
 API_URL = "http://127.0.0.1:5000/"
 team_post_API_URL = API_URL + "teams"
 game_post_API_URL = API_URL + "games"
+roster_post_API_URL = API_URL + "roster"
 
 
 def addTeam(team_id):
@@ -88,12 +101,7 @@ def addTeam(team_id):
 
     print(f"Adding team {team_id}: {response.status_code} - {response.json()}")
 
-'''
-team_id = 1
-while(team_id < 1000):
-    addTeam(team_id)
-    team_id += 1
-'''
+
 
 def addGame(game_url):
     response = requests.post(game_post_API_URL,json={"game_url": game_url})
@@ -104,27 +112,52 @@ def addGame(game_url):
 
 
 def add_games_for_team(team_id):
+    count = 0
     for game in team_games_played(team_id):
-        try:
+        try:       
             addGame(game)
+            count += 1
         except:
             #if it hits NPY games then delete the html file from the GamesHTML folder and break 
             cache_folder = "backend/GamesHTML"
             gameURLCode = game.split("/")[-1]
             cache_filename = os.path.join(cache_folder, f"{gameURLCode}.html")
             delete_file(cache_filename)
+            
             break #if it hits NPY games
 
-    print(f"Added All games for team: {team_id}")
+    print(f"Added All {count} games for team: {team_id}")
     print()
 
 
-#''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
+''' Adds All games for each Team (new games played since old ones are cached in GamesHTML)
 team_id = 1
 while(team_id < 1009):
     add_games_for_team(team_id)
     team_id += 1
+'''
+
+
+def updateTeamRoster(team_id):
+    response = requests.post(roster_post_API_URL,json={"teamID": team_id})
+
+    print(f"Updating team {team_id}: {response.status_code} - {response.json()}")
+
+''' Updates Team Roster for Team (Player Skills)
+team_id = 1
+while(team_id < 1009):
+    updateTeamRoster(team_id)
+    team_id += 1
+
+'''
+#Update Team and Update Roster (Dev Days)
 #'''
-#add_games_for_team(533)
+team_id = 653
+while(team_id < 1009):
+    add_games_for_team(team_id)
+    updateTeamRoster(team_id)
+    team_id += 1
+#'''
+#run python -m backend.scripts.dataAdder | python -m scripts.dataAdder
 
 

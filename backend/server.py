@@ -182,7 +182,7 @@ def game():
                 "message": "Game found or added successfully",
                 "game_id": game.game_id,
                 "game_type": game.game_type,
-                "season_year": game.season_id + 2042,
+                "season_year": game.season_id,
                 "home_team_id": game.home_team_id,
                 "away_team_id" : game.away_team_id
             }), 200  # HTTP 200 OK
@@ -197,10 +197,20 @@ def game():
         pass
 
 
+#Update TeamRoster (Player Skills for a Team)
+@app.route("/roster",methods=["POST"])
+def update_team_roster():
+    teamID = request.json.get("teamID")
+    try: 
+        update_team_roster_db(teamID)
+        return jsonify({
+            "message": "Updated Team Roster and Player Skills"
+        })
+    except:
+        return jsonify({
+            "message: Error"
+        })
 
-
-#Test Get Request for Game 
-#
 
 
 

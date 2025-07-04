@@ -1,17 +1,12 @@
 import numpy as np
 import joblib
+import warnings
+warnings.filterwarnings("ignore", message="X does not have valid feature names.*")
 
-#Outputs OBPM, DBPM, BPM of player given stats (not per 100)
+#FOR BPM (EPM iN WEBAPP)
+#Have the models folder and you save the models 
 
-#Includes converting stats to Per 100 (and getting TS% and eOfg%)
-#Have the models folder and you dont it saves the models 
-    
-    #OeFG == TS when no free throws 
-
-#off_values = [Poss,Pts,FGA,FTA,Off,AST,TO,FD]
-#def_values = [OPoss,OPTS,OFGA,DReb,STL,PF]
-
-def predict_bpm(pos, off_values, def_values):
+def predict_bpm(pos, Poss, O_Poss, off_values, def_values):
     # Load models based on position
     scaler_off = joblib.load(f"backend/BPM_Model/scaler_off_{pos}.pkl")
     pca_off = joblib.load(f"backend/BPM_Model/pca_off_{pos}.pkl")
@@ -21,44 +16,53 @@ def predict_bpm(pos, off_values, def_values):
     pca_def = joblib.load(f"backend/BPM_Model/pca_def_{pos}.pkl")
     model_def = joblib.load(f"backend/BPM_Model/model_def_{pos}.pkl")
 
-    # Load y_off_pred and y_def_pred from training 
-    y_off_pred = joblib.load(f"backend/BPM_Model/y_off_pred_{pos}.pkl")  
-    y_def_pred = joblib.load(f"backend/BPM_Model/y_def_pred_{pos}.pkl")  
+    # Load y_off_pred and y_def_pred from training (assumed to be stored separately)
+    y_off_pred = joblib.load(f"backend/BPM_Model/y_off_pred_{pos}.pkl")  # Load stored offensive predictions
+    y_def_pred = joblib.load(f"backend/BPM_Model/y_def_pred_{pos}.pkl")  # Load stored defensive predictions
+
+
+
+
+    #If player played in game but played "0" possessisons (played 1 minute)
+    if Poss == 0:
+        Poss = 1
+    if O_Poss == 0:
+        O_Poss = 1
     
-    #off_values = [Poss,Pts,FGA,FTA,Off,AST,TO,FD]
-    #def_values = [OPoss,OPTS,OFGA,DReb,STL,PF]
+    #off values -> [PTS, FGA, FTA, Off, AST, TO, FD]
+    off_per100 = []
 
 
+    try:
+        TS = off_values[0] / (2*(off_values[1] + .44*off_values[2]))
+    except:
+        TS = 0
 
-    off_per100 = [] #[Pts,Off,AST,TO,FD,TS%]
-    def_per100 = [] #[OPTS,DReb,STL,PF,OeFG%]
-
-    #Fixes times when players play "0" minutes (essentially 1 possession)
-    if off_values[0] == 0:
-        off_values[0] = 1 
-    if def_values[0] == 0:
-        def_values[0] = 1
-
-
+    #Converting off_values and def_values to per 100 and proper format for model
     for index, value in enumerate(off_values):
-        if index not in [0,2,3]:
-            off_per100.append(100 * (value / off_values[0]))
+        if index in [0,3,4,5,6]:
+            off_per100.append(100 * value / Poss)
+
+    #off_per100 = ['PTS', 'Off', 'AST', 'TO', 'FD', 'TS%']
+    off_per100.append(TS)
+
     
-    if off_values[2] == 0 and off_values[3] == 0:
-        off_per100.append(0)
-    else:
-        off_per100.append(off_values[1]/ (2 * (off_values[2] + .44 * off_values[3])))
-    
+    #def values -> [OPTS, OFGA, Def, STL, PF]
+    def_per100 = []
+
+    try:
+        O_efG = def_values[0]/ (2* def_values[1]) #efg same as TS when no FTAs
+    except:
+        O_efG = 0
+
     for index, value in enumerate(def_values):
-        if index not in [0,2]:
-            def_per100.append(100 * (value / def_values[0]))
+        if index != 1:
+            def_per100.append(100 * value / O_Poss)
     
-    if def_values[2] == 0:
-        def_per100.append(0)
-    else:
-        def_per100.append(def_values[1]/ (2 * def_values[2]))
 
-
+    #def_per100 = [OPTS,DReb,STL,PF,OeFG%]
+    def_per100.append(O_efG)
+    
 
     # Process offensive input
     off_val_np = np.array(off_per100).reshape(1, -1)
@@ -91,10 +95,15 @@ def predict_bpm(pos, off_values, def_values):
 '''
 # Example usage
 pos = "C"
-off_values = [51.9,16,8,4,1,4,1,5]
-def_values = [51.9,10,8,6,0,5]
+Poss = 60
+O_Poss = 50
+#off_values = [PTS, FGA, FTA, Off, AST, TO, FD]
+off_values = [22, 18, 4, 1, 5, 2, 3]
+#def_values = [OPTS, OFGA, Def, STL, PF]
+def_values = [18, 16, 3, 2, 2]
 
-print(predict_bpm(pos, off_values, def_values))
-#'''
 
+
+print(predict_bpm(pos,Poss,O_Poss,off_values,def_values))
+'''
 

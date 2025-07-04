@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <h1><a href="http://onlinecollegebasketball.org/team/{{team_stats['team_id']}}" target="_blank">{{team_stats["team_name"]}}</a> {{team_stats["season_id"]}} {{team_stats["game_type"]}} Stats Page</h1>
+
+        <h2> Roster </h2>
+        <table border=".4">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>Ht</th>
+                    <th>Wt</th>
+                    <th>SI</th>
+                    <th>Class</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for player in roster %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.height }}</td>
+                    <td>{{ player.weight }}</td>
+                    <td>{{ player.SI }}</td>
+                    <td>{{ player.Class }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>  
+        
+        <h2> Per Game</h2>
+        <table border=".4" class="player-stats-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>G</th>
+                    <th> GS</th>
+                    <th> Min </th>
+                    <th> FG </th>
+                    <th> FGA </th>
+                    <th> eFG% </th>
+                    <th> 3P </th>
+                    <th> 3PA </th>
+                    <th> 3P% </th>
+                    <th> 2P </th>
+                    <th> 2PA </th>
+                    <th> 2P%</th>
+                    <th> FT </th>
+                    <th> FTA </th>
+                    <th> FT%</th>
+                    <th> Off</th>
+                    <th> Def </th>
+                    <th> Reb </th>
+                    <th> AST </th>
+                    <th> STL </th>
+                    <th> BLK </th>
+                    <th> TO </th>
+                    <th> PF </th>
+                    <th> FD </th>
+                    <th> PTS </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for player in player_stats %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.GS }}</td>
+                    <td>{{ player.Min }}</td>
+                    <td>{{ player.FG_M }}</td>
+                    <td>{{ player.FG_A }}</td>
+                    <td>{{ player.eFG_P}}</td>
+                    <td>{{ player._3P_M }}</td>
+                    <td>{{ player._3P_A }}</td>
+                    <td>{{ player._3P_P }}</td>
+                    <td>{{ player._2P_M }}</td>
+                    <td>{{ player._2P_A }}</td>
+                    <td>{{ player._2P_P }}</td>
+                    <td>{{ player.FT_M }}</td>
+                    <td>{{ player.FT_A }}</td>
+                    <td>{{ player.FT_P }}</td>
+                    <td>{{ player.Off }}</td>
+                    <td>{{ player.Def }}</td>
+                    <td>{{ player.Rebs }}</td>
+                    <td>{{ player.AST }}</td>
+                    <td>{{ player.STL }}</td>
+                    <td>{{ player.BLK }}</td>
+                    <td>{{ player.TO }}</td>
+                    <td>{{ player.PF }}</td>
+                    <td>{{ player.FD }}</td>
+                    <td>{{ player.PTS }}</td>
+                </tr>
+
+            {% endfor %}
+            <tr>
+                <td> Team Totals </td>
+                <td></td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.Min }}</td>
+                <td>{{ team_stats.FG_M }}</td>
+                <td>{{ team_stats.FG_A }}</td>
+                <td>{{ team_stats.eFG_P}}</td>
+                <td>{{ team_stats._3P_M }}</td>
+                <td>{{ team_stats._3P_A }}</td>
+                <td>{{ team_stats._3P_P }}</td>
+                <td>{{ team_stats._2P_M }}</td>
+                <td>{{ team_stats._2P_A }}</td>
+                <td>{{ team_stats._2P_P }}</td>
+                <td>{{ team_stats.FT_M }}</td>
+                <td>{{ team_stats.FT_A }}</td>
+                <td>{{ team_stats.FT_P }}</td>
+                <td>{{ team_stats.Off }}</td>
+                <td>{{ team_stats.Def }}</td>
+                <td>{{ team_stats.Rebs }}</td>
+                <td>{{ team_stats.AST }}</td>
+                <td>{{ team_stats.STL }}</td>
+                <td>{{ team_stats.BLK }}</td>
+                <td>{{ team_stats.TO }}</td>
+                <td>{{ team_stats.PF }}</td>
+                <td>{{ team_stats.FD }}</td>
+                <td>{{ team_stats.PTS }}</td>
+            </tr>
+            </tbody>
+          </table>
+        
+        <h2> Advanced </h2>
+        <table border=".4">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>G</th>
+                    <th>GS</th>
+                    <th>Min</th>
+                    <th>TS%</th>
+                    <th>3PAr</th>
+                    <th>FTr</th>
+                    <th>ORB%</th>
+                    <th>DRB%</th>
+                    <th>TRB%</th>
+                    <th>AST%</th>
+                    <th>STL%</th>
+                    <th>BLK%</th>
+                    <th>TOV%</th>
+                    <th>USG%</th>
+                    <th>OBPM</th>
+                    <th>DBPM</th>
+                    <th>BPM</th>
+                    <th>OEPM</th>
+                    <th>DEPM</th>
+                    <th>EPM</th>   
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in player_stats %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.GS }}</td>
+                    <td>{{ player.Min }}</td>
+                    <td>{{ player.TS }}</td>
+                    <td>{{ player._3PAr }}</td>
+                    <td>{{ player.FTr }}</td>
+                    <td>{{ player.ORB_P }}</td>
+                    <td>{{ player.DRB_P }}</td>
+                    <td>{{ player.TRB_P }}</td>
+                    <td>{{ player.AST_P }}</td>
+                    <td>{{ player.STL_P }}</td>
+                    <td>{{ player.BLK_P }}</td>
+                    <td>{{ player.TO_P }}</td>
+                    <td>{{ player.USG_P }}</td>
+                    <td>{{ player.OBPM }}</td>
+                    <td>{{ player.DBPM }}</td>
+                    <td>{{ player.BPM }}</td>
+                    <td>{{ player.OEPM }}</td>
+                    <td>{{ player.DEPM }}</td>
+                    <td>{{ player.EPM }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td> Team Totals </td>
+                <td> </td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.Min }}</td>
+                <td>{{ team_stats.TS }}</td>
+                <td>{{ team_stats._3PAr }}</td>
+                <td>{{ team_stats.FTr }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ team_stats.OBPM }}</td>
+                <td>{{ team_stats.DBPM }}</td>
+                <td>{{ team_stats.BPM }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>  
+
+        <h2> Shooting </h2>
+        <table border=".4">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>G</th>
+                    <th>GS</th>
+                    <th>Min</th>
+                    <th>eFG%</th>
+                    <th>DIST</th>
+
+                    <th>2P</th>
+                    <th>Fin</th>
+                    <th>IS</th>
+                    <th>MR</th>
+                    <th>3P</th>
+
+                    <th>2P</th>
+                    <th>Fin</th>
+                    <th>IS</th>
+                    <th>MR</th>
+                    <th>3P</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in player_stats %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.GS }}</td>
+                    <td>{{ player.Min }}</td>
+                    <td>{{ player.eFG_P }}</td>
+                    <td>{{ player.DIST }}</td>
+
+                    <td>{{ (player._2P_A / player.FG_A)|round(3) if player.FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.F_A / player.FG_A)|round(3) if player.FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.IS_A / player.FG_A)|round(3) if player.FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.MR_A / player.FG_A)|round(3) if player.FG_A != 0 else 0 }}</td>
+                    <td>{{ (player._3P_A / player.FG_A)|round(3) if player.FG_A != 0 else 0 }}</td>
+                    
+                    <td>{{ player._2P_P }}</td>
+                    <td>{{ player.F_P }}</td>
+                    <td>{{ player.IS_P }}</td>
+                    <td>{{ player.MR_P }}</td>
+                    <td>{{ player._3P_P }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td> Team Totals </td>
+                <td></td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.GP }}</td>
+                <td>{{ team_stats.Min }}</td>
+                <td>{{ team_stats.eFG_P }}</td>
+                <td>{{ team_stats.DIST }}</td>
+
+                <td>{{ (team_stats._2P_A / team_stats.FG_A)|round(3) if team_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (team_stats.F_A / team_stats.FG_A)|round(3) if team_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (team_stats.IS_A / team_stats.FG_A)|round(3) if team_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (team_stats.MR_A / team_stats.FG_A)|round(3) if team_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (team_stats._3P_A / team_stats.FG_A)|round(3) if team_stats.FG_A != 0 else 0 }}</td>
+                
+                <td>{{ team_stats._2P_P }}</td>
+                <td>{{ team_stats.F_P }}</td>
+                <td>{{ team_stats.IS_P }}</td>
+                <td>{{ team_stats.MR_P }}</td>
+                <td>{{ team_stats._3P_P }}</td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <h2> Defense </h2>
+        <table border=".4">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>G</th>
+                    <th>GS</th>
+                    <th>Min</th>
+                    <th>eFG%</th>
+                    <th>DIST</th>
+
+                    <th>2P</th>
+                    <th>Fin</th>
+                    <th>IS</th>
+                    <th>MR</th>
+                    <th>3P</th>
+
+                    <th>2P</th>
+                    <th>Fin</th>
+                    <th>IS</th>
+                    <th>MR</th>
+                    <th>3P</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in player_stats %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.GS }}</td>
+                    <td>{{ player.Min }}</td>
+                    <td>{{ player.O_eFG_P }}</td>
+                    <td></td>
+
+                    <td>{{ (player.O_2P_A / player.O_FG_A)|round(3) if player.O_FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.O_F_A / player.O_FG_A)|round(3) if player.O_FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.O_IS_A / player.O_FG_A)|round(3) if player.O_FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.O_MR_A / player.O_FG_A)|round(3) if player.O_FG_A != 0 else 0 }}</td>
+                    <td>{{ (player.O_3P_A / player.O_FG_A)|round(3) if player.O_FG_A != 0 else 0 }}</td>
+                    
+                    <td>{{ player.O_2P_P }}</td>
+                    <td>{{ player.O_F_P }}</td>
+                    <td>{{ player.O_IS_P }}</td>
+                    <td>{{ player.O_MR_P }}</td>
+                    <td>{{ player.O_3P_P }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td> Team Totals </td>
+                <td></td>
+                <td>{{ opp_stats.GP }}</td>
+                <td>{{ opp_stats.GP }}</td>
+                <td>{{ opp_stats.Min }}</td>
+                <td>{{ opp_stats.eFG_P }}</td>
+                <td>{{ opp_stats.DIST }}</td>
+
+                <td>{{ (opp_stats._2P_A / opp_stats.FG_A)|round(3) if opp_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (opp_stats.F_A / opp_stats.FG_A)|round(3) if opp_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (opp_stats.IS_A / opp_stats.FG_A)|round(3) if opp_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (opp_stats.MR_A / opp_stats.FG_A)|round(3) if opp_stats.FG_A != 0 else 0 }}</td>
+                <td>{{ (opp_stats._3P_A / opp_stats.FG_A)|round(3) if opp_stats.FG_A != 0 else 0 }}</td>
+                
+                <td>{{ opp_stats._2P_P }}</td>
+                <td>{{ opp_stats.F_P }}</td>
+                <td>{{ opp_stats.IS_P }}</td>
+                <td>{{ opp_stats.MR_P }}</td>
+                <td>{{ opp_stats._3P_P }}</td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <h2> Minutes </h2>
+        <table border=".4">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>G</th>
+                    <th>GS</th>
+                    <th>Min</th>
+                    <th>PG%</th>
+                    <th>SG%</th>
+                    <th>SF%</th>
+                    <th>PF%</th>
+                    <th>C%</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+            {% for player in player_stats %}
+                <tr>
+                    <td><a href="http://onlinecollegebasketball.org/player/{{player.player_id}}" target="_blank">{{ player.name }}</a></td>
+                    <td>{{ player.Pos }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.GS }}</td>
+                    <td>{{ player.Min }}</td>
+                    <td>{{ (player.PG_Min / player.Min * 100)|round(0)|int if player.Min != 0 else 0 }}</td>
+                    <td>{{ (player.SG_Min / player.Min * 100)|round(0)|int if player.Min != 0 else 0 }}</td>
+                    <td>{{ (player.SF_Min / player.Min * 100)|round(0)|int if player.Min != 0 else 0 }}</td>
+                    <td>{{ (player.PF_Min / player.Min * 100)|round(0)|int if player.Min != 0 else 0 }}</td>
+                    <td>{{ (player.C_Min / player.Min * 100)|round(0)|int if player.Min != 0 else 0 }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>  
+
+        <select id="gameTypeSelect" name='game_type' onchange="changeGameType()">
+            <option value=''></option>
+            <option value='College'>College</option>
+            <option value='Conference'>Conference</option>
+            <option value='Playoff'>Playoff</option>
+            <option value='Tournament'>Tournament</option>
+            </select>
+          <a href="{{ url_for('home') }}"><button>Home</button></a>
+          </body>
+          </html>
+          <script>
+            function changeGameType() {
+              var selectedGameType = document.getElementById("gameTypeSelect").value;
+              var selectedYear = "{{ team_stats['season_id'] }}";  // Assuming you pass 'year' to the template from Flask
+              var selectedCode = "{{ team_stats['team_id'] }}";  // Assuming you pass 'teamCode' to the template from Flask
+          
+              // Build the new URL with the selected parameters
+              var newUrl = "/teamStats/" + selectedCode + "/" + selectedYear + "/" + selectedGameType;
+          
+              // Redirect to the new URL
+              window.location.href = newUrl;
+            }
+          </script>
+        
+
+    </body>
+</html>
+

@@ -1,17 +1,64 @@
 from bs4 import BeautifulSoup
 import requests
 from .pygetPlayerInfo import *
+#python -m backend.scripts.teamRosterInfo
+from datetime import *
+import os
+
+
+
+
+
+
+def save_html_to_file(content, filename):
+    with open(filename, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+# Function to load HTML content from a local file
+def load_html_from_file(filename):
+    with open(filename, 'r', encoding='utf-8') as file:
+        return file.read()
+
+def delete_file(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
+    return 
+
+
 
 #run in terminal: python -m scripts.teamRosterInfo
 
 #Outputs dictionary of team w/ team_name, team_id, players and their skills using the team's roster link
-def team_roster_info(teamURL):
-    
+def team_roster_info(teamURL,season):
+
+
+    cache_folder = "backend/TeamRosterPage"
+
+
     teamID = int(teamURL.split("/")[-1])
+    cache_filename = os.path.join(cache_folder, f"{teamID}-{season}.html")
     teamRosterURL = "http://onlinecollegebasketball.org/roster/" + str(teamID)
 
-    teamRosterPage = requests.get(teamRosterURL)
-    teamRosterSoup = BeautifulSoup(teamRosterPage.text,"html")
+    
+
+
+    try:
+        # Try to load HTML content from the local cache
+        page = load_html_from_file(cache_filename)
+        
+        
+    except FileNotFoundError:
+        # If not found, fetch the content from the URL
+        page = requests.get(teamRosterURL)
+
+        # Save HTML content to the local cache
+        save_html_to_file(page.text, cache_filename)
+        page = page.text #to fit in with variable names for soup 
+        
+
+
+    teamRosterSoup = BeautifulSoup(page,"html")
+
 
     #Finds Name of Team
 
@@ -37,10 +84,10 @@ def team_roster_info(teamURL):
         teamData["players"].append({
             "name": player[0].text[:-1],
             "playerID": int(playerSoup.find_all("td")[3].find("a").get("href")[8:]),
-            "Height": convert_to_inches(player[1].text),
-            "Weight": float(playerAthletics[1].split(":")[1].split(" ")[2]),
-            "Wingspan": convert_to_inches(playerAthletics[2].split(":")[1][2:]),
-            "Vertical": Vert_convert_to_inches(playerAthletics[3].split(":")[1][2:]),
+            "height": convert_to_inches(player[1].text),
+            "weight": float(playerAthletics[1].split(":")[1].split(" ")[2]),
+            "wingspan": convert_to_inches(playerAthletics[2].split(":")[1][2:]),
+            "vertical": Vert_convert_to_inches(playerAthletics[3].split(":")[1][2:]),
             "Pos": player[16].text,
             "Class": player[20].text,
             "IS": int(player[2].text),
@@ -67,5 +114,21 @@ def team_roster_info(teamURL):
     
     return teamData
 
-#print(team_roster_info("http://onlinecollegebasketball.org/team/533"))
+#print(team_roster_info("http://onlinecollegebasketball.org/team/353",2045))
 
+
+'''
+folder_path = "backend/TeamRosterPage"  # Change this to your target folder
+
+for filename in os.listdir(folder_path):
+    old_path = os.path.join(folder_path, filename)
+
+    if os.path.isfile(old_path):  # Ensure it's a file, not a folder
+        name, ext = os.path.splitext(filename)
+        new_filename = f"{name}-2044{ext}"
+        new_path = os.path.join(folder_path, new_filename)
+        
+        os.rename(old_path, new_path)
+
+print("Renaming complete.")
+'''

@@ -1,6 +1,6 @@
-SELECT p.name, psk.Pos,pavg.*
+SELECT DISTINCT p.name, psk.Pos,pavg.*
 FROM players p
 JOIN player_avg pavg on pavg.player_id = p.player_id
 JOIN players_skills psk on psk.player_id = p.player_id
-WHERE team_id = 533 AND pavg.game_type = "College"  and pavg.GP > 10 and pavg.Min > 10
+WHERE p.team_id = 533 AND pavg.game_type = "College"  and pavg.season_id = 2045 and psk.season_id = pavg.season_id and pavg.GP >=5
 ORDER BY pavg.BPM desc

@@ -27,6 +27,7 @@ class Game(db.Model):
     game_id = db.Column(db.Integer, primary_key=True)
     game_type = db.Column(db.String)
     season_id = db.Column(db.Integer, db.ForeignKey('seasons.season_id'))
+    game_date = db.Column(db.Integer)
     home_team_id = db.Column(db.Integer, db.ForeignKey('teams.team_id'))
     away_team_id = db.Column(db.Integer, db.ForeignKey('teams.team_id'))
 
@@ -110,8 +111,9 @@ class TeamStats(db.Model):
 
     game_id = db.Column(db.Integer, db.ForeignKey("games.game_id"), primary_key=True)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), primary_key=True)
+    
     outcome = db.Column(db.Integer)
-
+    
 
     Min = db.Column(db.Integer)
     PTS = db.Column(db.Integer)
@@ -121,10 +123,14 @@ class TeamStats(db.Model):
     _3P_M = db.Column(db.Integer, default=0)
     _3P_A = db.Column(db.Integer, default=0)
     _3P_P = db.Column(db.Float)
+    _2P_M= db.Column(db.Integer, default=0)
+    _2P_A = db.Column(db.Integer, default=0)
+    _2P_P = db.Column(db.Float)
     FT_M = db.Column(db.Integer)
     FT_A = db.Column(db.Integer)
     FT_P = db.Column(db.Float)
     Off = db.Column(db.Integer)
+    Def = db.Column(db.Integer)
     Rebs = db.Column(db.Integer)
     AST = db.Column(db.Integer)
     STL = db.Column(db.Integer)
@@ -245,6 +251,29 @@ class TeamAvg(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
+    #Adjusted BPM scores (uses SOS)
+    AOBPM = db.Column(db.Float)
+    ADBPM = db.Column(db.Float)
+    ABPM = db.Column(db.Float)
+    
+
+    TS = db.Column(db.Float)
+    _3PAr = db.Column(db.Float)
+    FTr = db.Column(db.Float)
+
+    ORtg = db.Column(db.Float)
+    NetRtg = db.Column(db.Float)
+    TO_P = db.Column(db.Float)
+    FT_FG_A = db.Column(db.Float)
+    ORB_P = db.Column(db.Float)
+    DRB_P = db.Column(db.Float)
+
+    SOS = db.Column(db.Float)
+    RPI = db.Column(db.Float)
+
+
+
+
 
     #game = db.relationship('Game', backref='team_game_info') #Allows to get seasonID and game_type from teamStats
     '''
@@ -267,6 +296,7 @@ class PlayerStats(db.Model):
     #season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"))
     
     Pos = db.Column(db.String)
+    GS = db.Column(db.Integer)
     Min = db.Column(db.Integer)
     PTS = db.Column(db.Integer)
     FG_M = db.Column(db.Integer, default=0)
@@ -282,6 +312,7 @@ class PlayerStats(db.Model):
     FT_A = db.Column(db.Integer)
     FT_P = db.Column(db.Float)
     Off = db.Column(db.Integer)
+    Def = db.Column(db.Integer)
     Rebs = db.Column(db.Integer)
     AST = db.Column(db.Integer)
     STL = db.Column(db.Integer)
@@ -332,6 +363,11 @@ class PlayerStats(db.Model):
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
 
+    #Real BPM (testing)
+    OEPM = db.Column(db.Float)
+    DEPM = db.Column(db.Float)
+    EPM = db.Column(db.Float)
+
 
     game = db.relationship('Game', backref='player_game_info') #Allows to get seasonID and game_type from playerStats
     '''
@@ -347,8 +383,15 @@ class PlayerAvg(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), primary_key=True)
     season_id = db.Column(db.Integer, db.ForeignKey("seasons.season_id"), primary_key=True)
     game_type = db.Column(db.String, primary_key=True)
-
+    GS = db.Column(db.Integer)
     GP = db.Column(db.Integer) #Games Played
+    #Minutes for Each Position
+    PG_Min = db.Column(db.Float)
+    SG_Min = db.Column(db.Float)
+    SF_Min = db.Column(db.Float)
+    PF_Min = db.Column(db.Float)
+    C_Min = db.Column(db.Float)
+    #
     Min = db.Column(db.Float)
     PTS = db.Column(db.Float)
     FG_M = db.Column(db.Float, default=0)
@@ -416,6 +459,28 @@ class PlayerAvg(db.Model):
     OBPM = db.Column(db.Float)
     DBPM = db.Column(db.Float)
     BPM = db.Column(db.Float)
+
+    #Adjusted BPM scores (uses SOS)
+    AOBPM = db.Column(db.Float)
+    ADBPM = db.Column(db.Float)
+    ABPM = db.Column(db.Float)
+
+    #Real BPM (testing)
+    OEPM = db.Column(db.Float)
+    DEPM = db.Column(db.Float)
+    EPM = db.Column(db.Float)
+
+    TS = db.Column(db.Float)
+    _3PAr = db.Column(db.Float)
+    FTr = db.Column(db.Float)
+    ORB_P = db.Column(db.Float)
+    DRB_P = db.Column(db.Float)
+    TRB_P = db.Column(db.Float)
+    AST_P = db.Column(db.Float)
+    STL_P = db.Column(db.Float)
+    BLK_P = db.Column(db.Float)
+    TO_P = db.Column(db.Float)
+    USG_P = db.Column(db.Float)
 
     #game = db.relationship('Game', backref='player_game_info') #Allows to get seasonID and game_type from playerStats
     '''
